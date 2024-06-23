@@ -1,0 +1,257 @@
+-------------------------------------------------------------------------------
+THIS AND PROTOTYPES IN JAVASCRIPT
+-------------------------------------------------------------------------------
+Traditional functions (non-arrow) functions are all considered constructors that
+can create entirely new objects with the 'new' keyword.  Traditional functions
+all have a prototype whereas arrow functions do NOT have a prototype.  The fact
+that traditional functions contain a prototype make it possible for functions to
+construct new objects.
+
+Within the function body of a traditional function, 'this' can be used to
+perform modifications on the protoype which is assigned to the newly created
+object on the LHS of a 'new' assignment.  It does NOT modify the prototype of
+the function itself. It acts on the prototype of the instance of the object that
+the function constructs.
+
+However, if you wanted to modify the prototype of a function directly, you could
+do so outside the function body.  However, this would lead to ALL instances of
+the constructor function being constructed with the same value for that
+particular property. (maybe thats what you want?)
+
+    function Brodude(name) {
+        this.name = name;
+        this.logName = function() {
+            console.log(this.name)
+        };
+    }
+
+    // OUTSIDE THE FUNCTION BODY
+    Brodude.prototype.isPerson = true;
+    Brodude.prototype.logIsperson = function() {
+        console.log(this.isPerson);
+    }
+
+    const brodude = new Brodude("Bro");
+    brodude.logName(); // Bro
+    brodude.logIsperson(); // true
+
+
+DIFFERENCES BETWEEN THIS IN TRADITIONAL FUNCTIONS VS ARROW FUNCTIONS
+-------------------------------------------------------------------------------
+TRADITIONAL FUNCTIONS:
+    Capture 'this' from the context in which they are called.  In other words,
+    they inherit 'this' from the object which calls them unless explicitly bound
+    to a specific 'this' with the help of one of the Function.prototype methods.
+
+    Unless explicitly bound to a 'this', every time a function that utilizes a
+    'this' value is called correctly, it inherits 'this' from the object to the
+    left of the member access operator (.).
+
+ARROW FUNCTIONS:
+    Capture 'this' from the surrounding lexical context in which they are
+    DEFINED.  In other words, is there a 'this' value that is within scope at
+    the time the arrow function was defined?  If so, the arrow function can
+    capture that value and use it just as it could any other variable.
+
+Given the differences between arrow functions and traditional functions we can
+now more easily see the how arrow functions and non-arrow functions interact
+with 'this' in different contexts.  Here are some examples:
+
+-------------------------------------------------------------------------------
+    // WITH CONSTRUCTOR FUNCTIONS
+
+    function Brodude(name) {
+        this.name = name;
+
+        // TRADITIONAL FUNCTION (COOL)
+        this.logName = function() {
+            console.log(this.name);
+        }
+
+        // ARROW FUNCTION (COOL, there is surrounding 'this' context)
+        this.logNameArrow = () => {
+            console.log(this.name)
+        };
+    }
+
+    const brodude = new Brodude("Bro");
+    brodude.logName(); // Bro
+    brodude.logNameArrow(); // Bro
+
+-------------------------------------------------------------------------------
+    // WITH PLAIN JAVASCRIPT OBJECTS
+
+    // COOL, when logName is called it will inherit 'this' from 'traditional'
+    const traditional = {
+        name: "foo",
+        logName: function() {
+            console.log(this.name);
+        }
+    }
+
+    // NOT COOL, there is no 'this' in the context of the 'arrow' block
+    const arrow = {
+        name: "bar",
+        logName: () => {
+            console.log(this);
+            console.log(this.name);
+        }
+    }
+
+    // COOL, when logName is called, logName will inherit this from
+    // 'arrowInside' and then 'this' will be within scope for 'log'
+    // to be able to access
+    const arrowInside = {
+        name: "baz",
+        logName: function() {
+            const log = () => {
+                console.log(this.name);
+            }
+            return log();
+        }
+    }
+
+    traditional.logName(); // foo
+    arrow.logName(); // undefined
+    arrowInside.logName(); // baz
+
+-------------------------------------------------------------------------------
+    // WITH PASSING AROUND MEMBER FUNCTIONS TO NOT OBJECTS
+
+    // NOTE: This is just a high level abstraction of the constructor
+    // function example that.  The 'Bro' block as a whole is the same
+    // as the function body of the 'not class based approach', and
+    // therefore 'this' is within context of the entire 'Bro' block
+    class Bro {
+        constructor(name) {
+            this.name = name;
+        }
+
+        logName() {
+            console.log(this.name);
+        }
+
+        logNameArrow = () => {
+            console.log(this.name);
+        }
+    }
+
+    const bro = new Bro("Bro");
+
+    // both log 'Bro' as expected
+    bro.logName();
+    bro.logNameArrow();
+
+    // NOT COOL, logs 'undefined' (or throws cannot read from undefined error)
+    // because traditional functions don't get 'this' from their
+    // scope in which they are defined like arrow functions do.
+    // They get it from the object that calls it and now we just
+    // took away that object!
+    const logName = bro.logName;
+    // logName();
+
+    // COOL, 'this' was given to logNameArrow when 'bro' was instantiated.
+    const logNameArrow = bro.logNameArrow;
+    logNameArrow(); // logs 'Bro'
+
+-------------------------------------------------------------------------------
+    // BIND, CALL, APPLY WORKAROUNDS (continutation of the above example)
+
+    const logName = bro.logName;
+    logName.call(bro);
+
+    const boundLogName = bro.logName.bind(bro);
+    boundLogName();
+
+    const applyLogName = bro.logName;
+    applyLogName.apply(bro);
+
+
+FUNCTION.PROTOTYPE.BIND
+-------------------------------------------------------------------------------
+Remember, arrow functions do not have a prototype so this method ONLY applies to
+functions created with the traditional function syntax.  The same applies for
+'call' and 'apply' in next two sections below of course.
+
+The bind method RETURNS an entirely new function that has a 'this' value which
+it inherits from the object passed in as an argument.
+
+
+FUNCTION.PROTOTYPE.CALL
+-------------------------------------------------------------------------------
+The call method CALLS a function and passes in the value of 'this' from the
+object passed in as an argument to the call method.
+
+
+FUNCTION.PROTOTYPE.APPLY
+-------------------------------------------------------------------------------
+This method is almost the same thing as 'call', but accounts for the possibility
+of extra parameters that need to be applied to the function call.  It uses an
+array to represent the other args.
+
+    someFunc.apply(donorObject, [arg1, arg2, arg3]);
+
+
+CONSTRUCTOR FUNCTIONS & FACTORY FUNCTIONS
+-------------------------------------------------------------------------------
+There are two other ways in JavaScript to create objects that don't utilize the
+ES6 class syntax.  You should always use the 'class' syntax though (personal
+opinion), but for the sake of being thorough...
+
+CONSTRUCTOR FUNCTIONS:
+    These are explained in detail above and are the basis for the class based
+    syntax abstraction.  The key points is that these are simply functions that
+    are NOT arrow functions.  Any traditional function can build and return a
+    new object with the 'new' keyword.  When 'this' is used within the function
+    body it acts on the prototype that the constructor creates for the LHS
+    variable of the 'new' assigment.
+
+FACTORY FUNCTIONS:
+    These are simply functions which return plain JavaScript objects.  In
+    sections above, there are examples to demonstrate how arrow functions and
+    traditional functions interact with plain JavaScript objects (they don't
+    have a 'this' so just use a traditional function for methods in plain js
+    objects).  Here is the syntax:
+
+    function brodudeFactory(name) {
+        return {
+            name: name,
+            logName: function() {
+                console.log(this.name);
+            },
+            // UNCOOL MAN, Will LOG UNDEFINED
+            logNameArrow: () => {
+                console.log(this.name);
+            }
+        }
+    }
+
+    const brodude = brodudeFactory("Bro");
+    brodude.logName(); // Bro
+    brodude.logNameArrow(); // undefined
+
+
+FUNCTIONS AS OBJECTS
+-------------------------------------------------------------------------------
+Functions (not arrow functions) in JavaScript are considered FIRST CLASS OBJECTS
+whichmeans that they can contain methods AND properties.  However, these methods
+are bound to the prototype of the function.  In this way, functions behave as
+'callable objects'.
+
+The important parts of functions being objects is using this knowledge to
+understand how they can be used as constructors for new objects because they
+also have a 'prototype' property (see above sections on constructors)
+
+    function brodude() {}
+
+    // name is a readonly property
+    // brodude.name = "brodude edited";
+    brodude.otherName = "other brodude";
+    console.log(brodude.name); // brodude
+    console.log(brodude.otherName); // other brodude
+
+    // prototype is separate (a property of) the brodude object
+    brodude.prototype.name = "brodude";
+    console.log(brodude.prototype.name); // brodude;
+
+

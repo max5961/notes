@@ -1,0 +1,279 @@
+Chapter 7 - Tests
+https://tldp.org/LDP/abs/html/tests.html
+-------------------------------------------------------------------------------
+### Test Constructs
+    - an if/then construct tests whether the exit status of a list of commands
+    is 0 (0 means "success" by UNIX convention), and if so, executes one or more
+    commands
+    - the left bracket [ is a dedicated builtin command and a synonym for test
+    - technically, the closing right bracket is not needed in [] because bash
+    considers [ the builtin command for test.  However, newer versions of bash
+    require closing brackets
+    - the extended test command [[...]] performs comparisons in a manner more
+    familiar to other programming languages.
+    - [[ is a keyword not a builtin command like single left bracket
+    - *****brackets are not to be used to test the success of a command and can
+    cause unintended behaviors
+        - the brackets will test for truthiness and since the exit status or
+        output of the command is almost never NULL or an empty string, then the
+        brackets will almsot always evaluate the command for true even if it had
+        a non-zero exit status
+
+
+
+    #!/bin/bash
+    word=Linux
+    letter_sequence=inu
+    if echo "$word" | grep -q "$letter_sequence"
+    # -q option to grep to suppress output
+    then
+        echo "$letter_sequence found in $word"
+    else
+        echo "$letter_sequence not found in $word"
+    fi
+
+    if COMMAND_WHOSE_EXIT_STATUS_IS_0_UNLESS_ERROR_OCCURED
+        then echo "Command succeeded"
+        else echo "Command failed"
+    fi
+
+
+    ### Testing Conditions
+    # 0 is true
+    if [ 0 ]; then
+        echo "0 is true"
+    else
+        echo "0 is false"
+    fi
+
+    # 1 is true
+    if [ 1 ]; then
+        echo "1 is true"
+    else
+        echo "1 is false"
+    fi
+
+    # NULL (empty condition) is false
+    if [ ]; then # NULL empty condition
+        echo "NULL is true"
+    else
+        echo "NULL is false"
+    fi
+
+    ### elif
+    if [ condition1 ]; then
+        command1
+        command2
+    elif [ condition2 ]; then
+        command3
+        command4
+    else
+        default-command
+    fi
+
+    ### test for input
+    # -z is a flag for the left bracket built-in that checks string resolves to
+    # true if the string is zero length
+    if [ -z "$1" ]; then                        # if [ $1 IS ZERO LENGTH ]
+        echo "No command-line arguments"
+    else
+        echo "First command-line argument is $1"
+    fi
+
+
+    ### TEST FLAGS USED WITHIN [] or [[]]
+        # STRING TESTS
+            -z: true if length of string is zero
+            -n: true if length of string is non-zero
+            =: string1 = string2: true if strings are equal
+            !=: string1 != string2: true if string are NOT equal
+            ==: is equal to
+                The == comparison operator behaves differently within a
+                double-brackets test than within single brackets.
+                [[ $a == z* ]]   # True if $a starts with an "z" (pattern matching).
+                [[ $a == "z*" ]] # True if $a is equal to z* (literal matching).
+                [ $a == z* ]     # File globbing and word splitting take place.
+                [ "$a" == "z*" ] # True if $a is equal to z* (literal matching).
+
+        # FILE TESTS
+            -f: true if FILE exists AND is a regular file
+            -d: true if FILE exits AND is a directory
+            -e: true if FILE exists
+            -a: identical to -e but has been deprecated
+            -b: true if FILE is a block device
+            -c: true if FILE is a character device
+            -p: true if FILE is a pipe
+            -h: true if FILE exists AND is a symbolic link
+            -L: true if FILE exists AND is a symbolic link
+            -r: true if FILE exists AND is readable
+            -w: true if FILE exists AND is writeable
+            -x: true if FILE exists AND is executable
+            -g: true if FILE exists AND "set-group-id" (sgid) flag set on file
+            -u: true if FILE exists AND "set-user-id" (suid) flag set on file
+            -k: true if FILE exists AND "save-text-mode" flag set on file
+            -s: true if FILE exists AND has a size greater than zero
+            -S: true if FILE exists AND is a socket
+            -t: true if FILE exists AND is associated witha  terminal device
+                - may be used to check whetehr the stdin [ -t 0 ] or stdout [ -t 1 ]
+                in a given script is terminal
+            -O: true if FILE exists AND you are the owner of the file
+            -G: true if FILE exists AND group-id of  file same as yours
+            -N: true if FILE exists AND file modifiedsince it was last read
+            f1 -nt f2: file f1 is newer than f2
+            f1 -ot f2: file f1 is older than f2
+            f1 -ef f2: files f1 and f2 are hard links to the same file
+            !: reversesthe sense of the tests above
+
+        # ARITHMETIC TESTS
+            -eq: true if integers are equal
+            -ne: true if integers are NOT equal
+            -lt: true if INT1 is less than INT2
+            -le: true if INT1 is less than or equal to INT2
+            -gt: true if ITN1 is greater than INT2
+            -ge: true if INT1 is greater than or equal to INT2
+            -a: AND     # NOTE can also do: if [ exp1 ] && [ exp2 ]; then # && IS OUTSIDE OF THE BRACKETS
+            -o: OR      # NOTE can also do: if [ exp1 ] || [ exp2 ]; then # || IS OUTSIDE OF THE BRACKETS
+            BELOW CAN ONLY BE USED FOR DOUBLE BRACKETS [[ ... ]]
+                &&: AND
+                ||: OR
+                <,>,<=,>=: less than, greater than,.....
+
+        ###
+        if [ ! -n "$1" ]; then  # length of string is NOT non-zero
+            echo "You have not provided me an argument brah"
+            exit 1
+        else
+            echo "Thank you for providing me your argument: "$1" brah"
+            exit 0
+        fi
+
+    ### [[...]]
+        - no filename expansion or word splitting takes place between [[ and ]],
+        but there is parameter expansion and command substitution
+        - for example, can not evaluate ls *.txt within [[...]]
+        - can use &&, ||, <, and > operators within a [[ ]] test, which is more
+        similar to conventional programming languages
+
+
+    ### ARITHMETIC TESTS USING (())
+        - the (( ... )) construct evaluates and tests numerical expressions
+        - the exit status is opposite from the [ ... ] construct
+        - the exit status still correlates to the bash style where an exit status
+        of 0 correlates to true, and an exit status greater than or equal to 1
+        is correlates most closely to false.  However, while the exit statuses
+        may correlate to the bash success/unsuccess, the exit status within
+        the (( ... )) construct more closely resembles a true/false in conventional
+        programming languages.
+
+
+        #!/bin/bash
+
+        (( 0 ))
+        echo "Exit status of \"(( 0 ))\" is $?"     # 1 (false)
+
+        (( 1 ))
+        echo "Exit status of \"(( 1 ))\" is $?"     # 0 (true)
+
+        (( 5 > 4 ))
+        echo "Exit status of \"(( 5 > 4 ))\" is $?"   # 0 (true)
+
+        (( 5 < 4 ))
+        echo "Exit status of \"(( 5 < 4 ))\" is $?"   # 1 (false)
+
+        (( 5 - 5 ))
+        echo "Exit status of \"(( 5 - 5 ))\" is $?"     # 1 (false)
+
+        (( 5 / 4 ))
+        echo "Exit status of \"(( 5 / 5 ))\" is $?"     # 0 (true)
+
+        (( 1 / 2 ))
+        # division result is < 1 which is rounded to zero and therefore false
+        echo "Exit status of \"(( 1 / 2 ))\" is $?"    # 1 (false)
+
+        (( 1 / 0 ))
+        # illegal division by 0
+        echo "Exit status of \"(( 1 / 0 ))\" is $?"    # 1 (false)
+
+
+        # EXAMPLE OF (( ... )) in an if-then test
+        #!/bin/bash
+        var1=5
+        var2=4
+        # note that var1 and var2 do not have the preceding $ in a (())
+        # construct
+        # this is because in an arithmetic context, (( )) automatically
+        # interprets words as variable names
+        if (( var1 > var2 ))
+        then
+            echo "$var1 is greater than $var2"
+        fi
+        exit 0
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

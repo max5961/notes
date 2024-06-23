@@ -1,0 +1,64 @@
+Chapter 5 - Quoting
+https://tldp.org/LDP/abs/html/quoting.html
+-------------------------------------------------------------------------------
+- when referencing a variable its generally advisable to enclose its name in
+double quotes
+- this is to prevent the reinterpretation of special characters within the
+quoted string except for $, `, and \
+- keeping $ as a special character within double quotes permits referencing a
+quoted variable
+
+    # splits $List by whitespace in the for loop
+    List="one two three"
+    for a in $List
+    do
+        echo "$a"
+    done
+    # one # two # three
+
+    # wrapping $List preserves the whitespace in the variable
+    for a in "$List"
+    do
+        echo "$a"
+    done
+    # one two three
+
+- since single quotes are "full quoting", the special meaning of $ is truned off
+- therefore you cannot reference variables by enclosing them in single quotes
+    a=5
+    echo '$a'   # output is $a, not 5
+
+- encapsulating ! within double quotes gives an error when used from the command
+line, but this problem does not occur within a script
+
+### Escaping
+    \n: newline
+    \r: return
+    \t: tab
+    \v: vertical tab
+    \b: backspace
+    \a: alert
+    \": gives quote literal its literal meaning
+    \$: gives the dollar sign its literal meaning
+    \\: gives the backslash its literal meaning
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

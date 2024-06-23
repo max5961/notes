@@ -1,0 +1,231 @@
+-------------------------------------------------------------------------------
+FLEXBOX
+-------------------------------------------------------------------------------
+MAIN AXIS
+- This refers to the primary axis along which items are laid out.  The
+default axis in FlexBox is horizontal.
+
+CROSS AXIS
+- This refers to the opposite of the of the axis which items are laid
+out. The default cross axis in flexbox is therefore vertical.
+
+-------------------------------------------------------------------------------
+CSS GRID
+-------------------------------------------------------------------------------
+If a grid child element does not explicitly define a height or width, Grid will
+automatically maximize the height and width to fit the size of its grid cell(s).
+This is in contrast to FlexBox, where by default, only the cross-sectional
+height or width of child elements are stretched to fit the size of their cells.
+Therefore, a grid container with a single child element will implicitly be the
+same height and width as the parent.
+
+    .grid-container {
+        display: grid;
+        height: 20rem;
+        width: 20rem;
+    }
+    .grid-container .child {
+        background-color: #000;
+    }
+
+Essentially, in Grid (and FlexBox), if the child elements have heights and/or
+widths which are explicitly defined (or previously implicitly defined), then
+both Grid and FlexBox will respect those heights and/or widths.
+
+On a fundamental level, Grid is multidimensional, and therefore does not have a
+specified axis like FlexBox does.  However, a grid container without any defined
+rows or columns behaves like it has a vertical axis.  Based on visual cues
+alone, a default display: grid; looks like the opposite of a default display:
+flex;
+
+
+GRID POSITIONING AND ALIGNMENT
+-------------------------------------------------------------------------------
+While grid does automatically adjust child elements height and width to fit the
+size of the child element's respective cell(s), applying positioning and/or
+alignment properties can effect this automatic adjustment of height and width.
+
+JUSTIFY VS ALIGN
+    - Justify is across the LEFT - RIGHT axis (row axis, or inline axis)
+    - Align is across the UP - DOWN axis (column axis, or block axis)
+
+    Note: In FlexBox, justify and align are relative to the main-axis, but in
+    Grid, given that there is no specific axis, justify and align have a
+    constant meaning.
+
+ITEMS VS CONTENT
+    - content refers to positioning of the grid itself inside of the grid
+      container.  It will set its height or width to the child element with the
+      greatest height or width.
+    - items refers to the positioning of child elements inside of their cells
+
+ALIGN-ITEMS:
+    - Modifies the children of a grid container within their respective cells.
+      If a child element has no defined height, then it will have an implicit
+      height of 0px after applying align-items to the parent grid container.
+
+JUSTIFY-ITEMS
+    - The exact opposite of align-items.  Modifies the children of a grid
+      container within their respective cells. If a child element has no defined
+      width, then it will have an implicit width of 0px after applying
+      justify-items to the parent grid container.
+
+ALIGN-CONTENT
+    - Modifies the entire grid to be the height of its child element with the
+      greatest height, then positions that new height within the original
+      height/width of the container.  If no child element has any defined
+      height, then the height of the grid becomes 0px and is still positioned
+      relative to its original height/width, but is essentially hidden.  If only
+      one child element has any defined height, then all others become 0px.
+
+JUSTIFY-CONTENT
+    - The exact opposite of align-content.
+
+
+NOTE ON ALL OF THE ABOVE:
+    On a fundamental level, justify and align both need some sort of width or
+    height (respectively) to work with.
+
+    If child elements are not given a height or width, then justify and align
+    will default them to 0px.  However, when explicitly defining rows and
+    columns, it is as if you are defining height and/or width to the child
+    elements.  Applying a justify-content or an align-content will not shrink
+    the width or height properties to 0px IF the grid has defined rows and/or
+    columns.  However, applying a justify-items or align-items will still shrink
+    the width and/or width to 0px.  justify-items and align-items still need an
+    explicitly defined or inherited height or width to work with.
+
+
+JUSTIFY / ALIGN : CONTENT / ITEMS .... SPECIFIC VALUES
+-------------------------------------------------------------------------------
+    justify-items:
+        start, center, end, stretch
+
+    align-items:
+        start, center, end, stretch, baseline
+
+    justify-content:
+        start, center, end, space-between, space-around, space-evenly
+
+    align-content:
+        center, space-between, space-around, space-evenly, stretch
+
+For justify-items and align-items, start/center/end are all self explanatory.
+They position grid items along the row or column axis.  'stretch' however
+doesn't exactly position the grid items, but it stretches their respective
+heights or widths to fit the content of the cell(s).  This stretch still doesn't
+overwrite explicitly defined heights or widths of the child elements though.
+
+align-items: baseline;
+    - This is relevant when working with text.  'baseline' aligns grid items
+      relative to each other so that their text baselines align with each other.
+
+align-content / justify-content
+    - The values which these accept do pretty much what you would expect,
+      however, remember that if you explicitly set rows and columns then because
+      that gives a defined height and width to the cells, some of these will not
+      work as expected.  By giving each cell a defined height and/or width when
+      setting rows and/or columns, the grid can no longer shrink itself to be
+      positioned relative to its height and width properties.
+
+    - To get an idea of what these values do when applied to justify and align
+      content, its helpful to use a default grid container (only declaration is
+      display: grid; and specifying its height/width properties) and then to use
+      DevTools with grid lines to see the effects.
+
+
+GRID-TRICKS / REPEAT / MINMAX / AUTO-FILL / AUTO-FIT
+-------------------------------------------------------------------------------
+    .grid-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    }
+
+Short answer, the above grid-template-columns declaration will make grid items
+responsive to shrinking container widths.  Typically, this would be if the
+grid container was responsive to the screen width.  Each grid item has a
+min-width of 200px, and when it is forced to shrink smaller than 200px, it is
+neatly forced onto the row below.
+
+NOTE: The below explanations assume we are utilizing the grid-template-columns
+property, because most of the time responsive design is going to be applied to
+dynamic widths, not heights.  Therefore, the explanations use terms such as
+min-width instead of min-height, but the same principles could be applied to
+grid-template-rows and then min-height would be relevant instead.
+
+auto-fill:
+    auto-fill takes the minimum value from the minmax function and attempts to
+    distribute as many cells as it can that are at least that minimum value. so,
+    for example, if your container is 800px wide and your minmax is
+    minmax(200px, 1fr), then you will have 4 columns regardless of the amount of
+    children elements in your grid container.  If your container is 999px wide,
+    then you still have 4 columns, but you will have 5 if your container is
+    1000px wide and 6 if 1200px wide.
+
+auto-fit:
+    In contrast with auto-fill, auto-fit puts whatever it can on a single row
+    and grows each child element as much as possible.  It only puts elements on
+    a new row if the elements are forced to shrink below the min-width specified
+    in the minmax function.
+
+Choosing between auto-fit / auto-fill:
+    given the above explanations of auto-fit and auto-fill....
+
+    auto-fill is a better options when:
+        - you don't want your grid items to stretch too wide
+        - dead space is not a concern
+
+    auto-fit is a better option when:
+        - you don't care how wide your grid items will stretch
+        - you do not want dead space
+
+    It might be difficult to tell the difference between auto-fit and auto-fill
+    depending on the context in which they are being used, but the above
+    explanations should help clarify what the actual differences are.
+
+
+REPEAT() / MINMAX() / AUTO-FILL / AUTO-FIT IN MORE DETAIL
+-------------------------------------------------------------------------------
+The above explanations show how minmax, auto-fit, and auto-fill can be used in a
+specific capacity, but don't explain much about these keywords themselves.
+
+REPEAT()
+    - repeat() is a function which can be used ONLY within grid-template-columns
+      or grid-template-rows declarations.  The repeat function takes in a repeat
+      value, then the width or height value that should be repeated.  Combining
+      auto-fit, auto-fill, and minmax() with the repeat function allows for grid
+      items which are dynamic and responsive to changing container dimensions.
+
+AUTO-FIT / AUTO-FILL
+    - auto-fit and auto-fill are keywords which can be used ONLY in the repeat
+      function as its first argument.
+
+MINMAX(sdfsdf)
+    - minmax() is a function which can be used ONLY in css grid declarations.
+      It is used to create a size range for grid cells.  The minmax() function
+      can be used outside of the repeat() function.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

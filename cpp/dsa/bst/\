@@ -1,0 +1,186 @@
+#include <iostream>
+#include <queue>
+
+template <typename T> class BST;
+
+template <typename T> class Node {
+    friend class BST<T>;
+    const T value;
+
+  public:
+    /* left and right are public only for the purposes of running simple tests
+     * at the start of writing this implementation */
+    Node<T> *left;
+    Node<T> *right;
+    Node(const T &value) :
+        value(value),
+        left(nullptr),
+        right(nullptr) {
+    }
+    T getValue() {
+        return value;
+    }
+};
+
+template <typename T> class BST {
+  public:
+    /* root is public only for the purposes of running simple tests at the start
+     * of writing this implementation */
+    Node<T> *root;
+    BST() :
+        root(nullptr) {
+    }
+    bool isEmpty() const;
+    void insert(const T &value);
+    void insert(Node<T> *&root, Node<T> *&node);
+    bool search(const T &value) const;
+    bool search(const Node<T> *const &root, const T &value) const;
+    // read data -> visit left subtree -> visit right subtree
+    void preOrderDfs() const;
+    void preOrderDfs(const Node<T> *const &root) const;
+    // visit left subtree -> read data -> visit right subtree
+    void inOrderDfs() const;
+    void inOrderDfs(const Node<T> *const &root) const;
+    // visit left subtree -> visit right subtree -> read data
+    void postOrderDfs() const;
+    void postOrderDfs(const Node<T> *const &root) const;
+    // breadth first search
+    void levelOrderBfs() const;
+};
+
+template <typename T> bool BST<T>::isEmpty() const {
+    return !root;
+}
+
+template <typename T> void BST<T>::insert(const T &value) {
+    Node<T> *node = new Node<T>(value);
+
+    if (isEmpty()) {
+        root = node;
+    } else {
+        insert(root, node);
+    }
+}
+
+template <typename T> void BST<T>::insert(Node<T> *&root, Node<T> *&node) {
+    if (node->value < root->value) {
+        if (!root->left) {
+            root->left = node;
+        } else {
+            insert(root->left, node);
+        }
+    } else {
+        if (!root->right) {
+            root->right = node;
+        } else {
+            insert(root->right, node);
+        }
+    }
+}
+
+template <typename T> bool BST<T>::search(const T &value) const {
+    return search(root, value);
+}
+
+template <typename T>
+bool BST<T>::search(const Node<T> *const &root, const T &value) const {
+    if (!root) {
+        return false;
+    }
+
+    if (root->value == value) {
+        return true;
+    }
+
+    if (value < root->value) {
+        return search(root->left, value);
+    } else {
+        return search(root->right, value);
+    }
+}
+
+template <typename T> void BST<T>::preOrderDfs() const {
+    preOrderDfs(root);
+    std::cout << '\n';
+}
+
+template <typename T>
+void BST<T>::preOrderDfs(const Node<T> *const &root) const {
+    if (!root) {
+        return;
+    }
+
+    std::cout << root->value << " ";
+    preOrderDfs(root->left);
+    preOrderDfs(root->right);
+}
+
+template <typename T> void BST<T>::inOrderDfs() const {
+    inOrderDfs(root);
+    std::cout << '\n';
+}
+
+template <typename T>
+void BST<T>::inOrderDfs(const Node<T> *const &root) const {
+    if (!root) {
+        return;
+    }
+
+    inOrderDfs(root->left);
+    std::cout << root->value << " ";
+    inOrderDfs(root->right);
+}
+
+template <typename T> void BST<T>::postOrderDfs() const {
+    postOrderDfs(root);
+    std::cout << '\n';
+}
+
+template <typename T>
+void BST<T>::postOrderDfs(const Node<T> *const &root) const {
+    if (!root) {
+        return;
+    }
+
+    postOrderDfs(root->left);
+    postOrderDfs(root->right);
+    std::cout << root->value << " ";
+}
+
+template <typename T> void BST<T>::levelOrderBfs() const {
+    std::queue<Node<T> *> q;
+    q.push(root);
+
+    while (q.size()) {
+        Node<T> *curr = q.front();
+        q.pop();
+
+        if (curr->left) {
+            q.push(curr->left);
+        }
+
+        if (curr->right) {
+            q.push(curr->right);
+        }
+
+        std::cout << curr->value << " ";
+    }
+
+    std::cout << '\n';
+}
+
+int main() {
+    BST<int> *const bst = new BST<int>;
+    bst->insert(10);
+    bst->insert(5);
+    bst->insert(15);
+    bst->insert(3);
+    bst->insert(7);
+    bst->preOrderDfs();
+    bst->inOrderDfs();
+    bst->postOrderDfs();
+    bst->levelOrderBfs();
+
+    delete bst;
+    return 0;
+}

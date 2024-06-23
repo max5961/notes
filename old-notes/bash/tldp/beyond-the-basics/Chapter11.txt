@@ -1,0 +1,216 @@
+Chapter 11 - Loops and Branches
+https://tldp.org/LDP/abs/html/loops.html
+-------------------------------------------------------------------------------
+### LOOPS
+- a loop is a block of code that iterates a list of commands as long as the loop
+control condition is true
+
+# FOR LOOPS
+
+    for arg in [list]
+        - This is the basic looping construct.  it differs signicantly from its
+        C counterpart
+
+        for arg in [list]; do
+            command(s)
+        done
+
+        #!/bin/bash
+        for planet in Mercury Venus Earth Mars Jupiter Saturn Uranus Neptune Pluto
+        do
+            echo $planet # each planet is on a separate line
+        done
+
+        for planet in "Mercury Venus Earth Mars Jupiter Saturn Uranus Neptune Pluto"
+        do
+            echo $planet # each planet is on the same line
+            # The entire 'list' enclosed in quotes creates a single variable
+            # whitespace is incorporated into the variable
+        done
+
+        #!/bin/bash
+        # file info
+        # operating on a file list contained in a variable
+        FILES="/usr/sbin/accept
+        /usr/sbin/pwck
+        /usr/sbin/chroot
+        /usr/bin/fakefile
+        /sbin/badblocks
+        /sbin/ypbind" # List of files.  /usr/bin/fakefil is a dummy file
+
+        # note that because the $FILES variable is a list of items separated by
+        # whitespace (/n in this example), then if you were to put "$FILE" in
+        # double quotes it would ensure the variable is treated as a single string
+        # and iterate only once over the single string.  By NOT quoting $FILES,
+        # the loop separates items based on the fields IFS value (\n in this case,
+        # but it could be \s, or \t by default as well) and iterates over every
+        # item that is separated by the IFS (internal field separator)
+
+        for file in $FILES; do
+            if [ ! -e "$file" ]; then  # check if file exists
+                echo "$file does not exist brah"
+                continue
+            fi
+            ls -l $file | awk '{ print $8 "         file size: " $5 }'
+            whatis 'basename $file ' # File info
+            # Note that the whatis database needs to have been set up for this
+            # to work.  To do this root run /usr/bin/makewhatis
+        done
+
+
+        ### OPERATING ON FILES WITH A FOR LOOP
+        #!/bin/bash
+        # example using globbing
+        # note that globbing does not match dotfiles
+        for fine in *; do # for file in $PWD
+            ls -l "$file" # lists the file in the $PWD
+        done
+
+        for file in [jx]*; do
+            rm -f $file # removes only files beginning with "j" or "x" in $PWD
+            echo "Removed file \"$file\""
+        done
+
+        #!/bin/bash
+        # generating the list in a for loop with command substitution
+        NUMBERS="9 7 3 8 37.53"
+        for number in $( echo $NUMBERS ); do
+            echo -n "$number"
+        done
+
+        #!/bin/bash
+        # command substitution example with function
+        generate_list() {
+            echo "one two three"
+        }
+        for word in $(generate_list); do
+            echo "$word"
+        done
+
+### WHILE LOOPS
+    - Testss for a condition at the top of a loop and keeps looping as long as
+    that condition is true.  In contrast to a for loop, a while loop finds use
+    in situations where the number of loop repetitions is not known beforehand
+
+    while [ condition ]
+    do
+        command(s)...
+    done
+
+    - The bracket construct in a while loop is nothing more than the test brackets
+    used in an if/then test.  A while loop can also legally use the more versatile
+    double brackets construct as well and even the double parentheses construct
+    - note that the test brackets are not mandatory in a while loop
+
+### UNTIL LOOPS
+    - This construct tests for a condition at the top of a loop and keeps looping
+    as long as that condition is false.  This is the opposite of a while loop
+
+    until [ condition-is-true ]
+    do
+        commands(s)...
+    done
+
+### NESTED LOOPS
+    - A nested loop is a loop within a loop.  The first pass of the outer loop
+    triggers the inner loop, which executes to completion.  Then the second pass
+    of the outer loop triggers the inner loop again.  This repeats until the
+    outer loop finishes.
+    - A "break" within either the inner or outer loop would interrupt the inner
+    or outer loop respectively
+
+### LOOP CONTROL
+    break, continue
+        - the break and continue loop control commands correspond exactly to
+        their counterparts in other programming languages.
+        - The break command terminates the loop (breaks out of it)
+        - The continue command causes a jump to the next iteration of the loop,
+        skipping all of the remaining command in that particular loop cycle
+
+        - The break and continue commands take an optional parameter
+
+        - A plain break terminates only the innermost loop in which it is embedded,
+        but a break N breaks out of N levels of loop
+        #!/bin/bash
+        for outloop in 1 2 3 4 5; do
+            echo -n "Group $outerloop: ";
+            for innerloop in 1 2 3 4 5; do
+                echo -n "$innerloop "
+                if [ "$innerloop" -eq 3 ]; then
+                    break # doesn't break out of both loops, but break 2 will
+                fi
+            done
+        done
+
+        -  A plain continue cuts short the current iteration within its loop, but
+        a continue N terminates all remain iterations at its loop level and continues
+        with the next iteration at the loop, N levels above
+        #!/bin/bash
+        for i in I II III IV V; do
+            echo; echo -n "Group $i: "
+
+            for j in 1 2 3 4 5 6 7 8 9 10; do
+                if [[ "$i" -eq 7 && "$j" = "III" ]]; then
+                    continue 2 # continue at loop on "i" with "IV"
+                fi
+
+                echo -n "$j" # 7 8 9 10 will not echo on "Group III"
+            done
+        done
+
+
+### TESTING AND BRANCHING
+- The case and select constructs are technically not loops since they do not
+iterate the execution of a code block.  However, like loops, they direct program
+flow according to conditions at the top of bottom of the block
+
+case(in)/esac
+    - the case construct is the shell scripting analog to switch in C/C++.  It
+    permits branching to one of a number of code blocks, depending on condition
+    tests.  It serves as a kind of shorthand for multiple if/then/else statements
+    and is an appropriate tool for creating menus
+
+    case "$variable" in
+        "$condition1")
+        command...
+        ;;
+
+        "$condition2")
+        command...
+        ;;
+    esac
+
+    - quoting the variables is not mandatory, since word splitting does not take
+    place
+    - Each test lin eends with a right paren)
+    - Each condition block ends with a double semicolon ;;
+    - If a condition tests true, then the associated commands execute and the case
+    block terminates
+    - the entire case block ends with an esac (case spelled backwards)
+
+    #!/bin/bash
+    # testing keypresses
+
+    echo; echo "Hit a key brah, then hit return"
+    read Keypress
+
+    case "$Keypress" in
+        [[:lower:]] ) echo "Lowercase letter";;
+        [[:upper:]] ) echo "Uppercase letter";;
+        [0-9] ) echo "Digit";;
+        * ) echo "Punctuation, whitespace, or other";;
+    esac
+
+
+    - see more examples at: https://tldp.org/LDP/abs/html/testbranch.html
+
+
+
+
+
+
+
+
+
+
+

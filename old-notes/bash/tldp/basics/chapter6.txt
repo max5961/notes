@@ -1,0 +1,71 @@
+Chapter 6 - Exit and Exit Status
+https://tldp.org/LDP/abs/html/exit-status.html
+-------------------------------------------------------------------------------
+### The "exit" command
+    - terminates a script
+    - can also return a value, which is then available to scripts parent process
+    - successful command returns a 0
+    - unsuccessfull command returns a non-zero value that can usually be
+    interpreted as an error code
+    - functions within a script can also return an exit status
+        - the last command executed in the function of a script determines the
+        exit status
+
+    - "exit nnn" may be used to deliver an nnn exit status to the shell
+        - nnn must be an integer in the 0 - 255 range
+
+    #!/bin/bash
+    COMMAND_1
+    ...
+    COMMAND_LAST
+    # will exit with the status of last command
+
+    # exit $? or even just ommitting the exit is the same thing as the line
+    # below
+    exit
+
+    - $? read the exit status of the last command executed.
+    - this is bash's way of giving functions a "return value"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

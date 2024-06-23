@@ -1,0 +1,83 @@
+My initial concern when approaching the task of creating a Linked List in c++
+was that with the amount of pointers I would need to modify the Linked List it
+would be somehow difficult or impossible to deallocate memory.  I was unsure if
+I needed to use the pointer identifier that instantiated the memory block for
+the new Node or if I could use any identifier.  Additionally, I was slightly
+unsure of the behavior of creating multiple pointers to the same memory block
+and if I would need to 'delete' these pointers as well.
+
+Because of these concerns, I decided to experiment by first creating the
+LinkedList class without dynamic memory.  While writing this implementation, I
+recieved a shell error 'segmentation fault (core dumped)', which after a bit of
+research means that you are trying to access memory which is not supposed to be
+accessed.  That memory is possibly (likely) already been freed.  This led to to
+believe that Linked Lists must be implemented using dynamic memory.  If it is
+possible without dynamic memory, then I can't see how it would be very practical
+and and based on objects.  I initially thought that maybe because I defined a
+new LinkedList object inside of main, that somehow the 'chain of pointers' to
+new Node objects would all stay in scope.  This was not the case however, and
+not even the head Node was able to stay in scope without dynamic memory.  This
+is because in order to automatically allocate memory, you would first need to
+create a new Node, then use the identifier for that newly created Node t give
+the head node an address to point to.  Once the function attempting to add that
+Node was finished, c++ automatically frees the memory at it's address because
+the scope is tied to the identifier that it was assigned when it was created.
+
+
+Working through these problems allowed me to deepen my understanding of pointers
+and memory management.  My concerns related to dynamic memory of handling many
+different pointers that needed to be created in member functions was not a
+concern.  This is because with dynamic memory, when the pointer goes out of
+scope, the pointer variable is destroyed, but the memory is NOT freed.  While
+its easy to see how this could lead to memory leaks, the pointers which are
+member variables of the object instances don't go out of scope until the object
+is deleted.  Its an important distinction to make between deleting pointers vs
+deleting memory and pointers which are member variables and pointers which have
+block scope:
+
+    The pointer identifiers defined within the scope of a function (block scope)
+    are deleted when they go out of scope (most of the time when the function
+    ends), but the memory address they point to is unaffected.  Even though
+    these pointer identifiers may not have been the original pointers that
+    allocated the dynamic memory they point to, it is important to note that
+    they can still delete that memory.  Any pointer pointed to an address on the
+    heap has the ability to delete that memory.
+
+    The pointer identifiers which are members of a class do not get deleted
+    until the object is destroyed (either through dynamic memory management or
+    automatic memory management).  The lifetime of member variables is tied to
+    the lifetime of the instance of the object they are members of.
+
+Other takeaways:
+    - This gave me an opportunity to create a class template for my LinkedList
+      and Node class so that any type of LinkedList could be used.
+
+    - I had already learned about destructor special member functions before
+      implementing this, however, I didn't have a very good understanding of WHY
+      they were needed.  Implementing this Linked List made it clear that
+      deleting the parent Linked List object would not delete all of it's child
+      nodes, and therefore made the purpose of a destructor function clear to
+      me.
+
+    - Originally I had written this by declaring prototypes of member functions
+      within the class definition and then defining them later.  However, with
+      the class templates needing to be redefined everytime a member function
+      was defined outside of the class, this became cumbersome and I moved all
+      definitions into the class again.  The 'aerial' neovim plugin makes it
+      easy to see all the member functions in one place anyways.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

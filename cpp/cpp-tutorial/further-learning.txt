@@ -1,0 +1,56 @@
+Further Learning topics:
+
+Rule of Three/Five/Zero
+Four Rules of Safe Conversions
+
+Standard Library features:
+    Containers Library:
+        std::vector
+        std::map
+        std::set
+        std::unordered_map
+        std::unordered_set
+        std::list
+        std::deque
+    Smart Pointers
+        std::unique_ptr
+        std::shared_ptr
+        std::weak_ptr
+    Algorithms Library
+        std::sort
+        std::find
+        std::accumulate
+    Concurrency
+        std::thread
+        std::mutex
+        std::future
+    File I/O
+        std::ifstream
+        std::ofstream
+    Regex
+        std::regex
+
+Beyond the Standard Library
+    Boost Library
+    Networking (Boost.Asio for example)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

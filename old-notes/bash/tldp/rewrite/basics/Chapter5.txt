@@ -1,0 +1,93 @@
+Chapter 3 - Special Chars
+
+Comments #
+    - lines beginning with a # with the exception of #! are comments and
+    will not ebe executed
+    - comments may follow whitespace at the beginning of a line
+    - comments occur foloowing the end of a command
+
+Command Separator ;
+    - permits putting two or more commands on the same line
+        echo hello; echo there;
+
+Terminator ;;
+    - used in case options
+    case "$var" in
+        abc) echo "\$var = abc" ;;
+    esac
+
+Dot Command . or ..
+    - a filename with a leading dot meansing a hidden file (dotfile)
+    - the plain ls command will not show hidden files
+
+    - when working with directory names:
+        - a single dot represents the cwd
+        - two dots represent the parent directory
+
+    - the dot often appears as the destinationi dir of a file movement command
+        cp /home/bozo/path/to/dir/* .
+
+Partial Quoting vs Full Quoting "" ''
+    - doubles quotes are partial quoting
+        - preserves MOST special chars within the string from interpretation
+    - single quotes are full quoting
+        - preserves ALL special chars within the string from interpreation
+    - full quoting single quotes are therefore a strong form of quoting but not
+    necessarily the type you should use.  For example, cannot reference vars with
+    single quotes
+
+Comma Separator
+    - links together a series of arithmetic operations
+    - ALL operations are evaluated, but only the LAST is returned
+
+Escape \
+    - escapes the proceeding char
+
+Filename Path Separator /
+    - also the division operator
+    - in the context of filepaths path/to/file
+
+Null Command :
+    - a do nothing operation
+    - considered a synonum for the shell built in "true"
+    - : itself is a bash builtin and has an exit status of 0 (success/true)
+
+    ### endless loop example
+    while :
+        do
+            operation_1
+        done
+
+Bang !
+    - reverses or negates the sense of a test or exit status
+    != not equal
+
+Wild Card *
+    - matches every filename in a given directory
+
+Arithmetic Operator *
+    - denotes multiplication in the context of arithmetic operatioins
+
+Test Operator ?
+    - indicates a test for a certain condition
+    - in the double parentheses construct, ? serves as a ternary operator
+    (( var0 = var1<98?9:21 ))
+
+Variable Substitution $
+    - $ prefixing a variable name indiciates the "value" the variable holds
+
+End of line $
+    - in a regex denotes end of line
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,252 @@
+Lines beginning with a hash sign (#) are called what? (#include <iostream>)
+Directives
+
+Define what a function is:
+A function is a group of code statements that are given a name.
+
+What are the two ways of commenting code in cpp?
+// line comment ... /* block comment */
+
+What is an expression?
+An expression is any segment of code that EVALUATES to a value.
+
+What is a statement?
+A complete line of code that ends with a ; which performs some action.
+
+What is an operator?
+A symbol that performs operations on variables and values (+,-,*,/,%,=)
+
+What is an operand?
+The values on which an operator performs operations on.
+
+What is an identifier?
+A variable, which is a portion of memory that stores a value
+
+Can an identifier ever begin with a digit?
+No
+
+What are fundamental data types?
+character, numerical integer, floating-point, and boolean types
+
+How many bits are in one byte?
+8 bits
+
+How many bits is a char?
+Exactly 1 byte (8 bits)
+
+How many bits is an int?
+At least 16 bits (2 bytes)
+
+How many bits is a long int?
+At least 32 bits (4 bytes)
+
+How many bits is a long long int?
+At least 64 bits (8 bytes)
+
+What are the 3 floating point types?
+float, double, long double
+
+Order the 3 floating point types from LEAST to MOST precise
+float, double, long double
+
+Is C++ a strongly or weakly typed language?
+strongly typed
+
+What is meant by "strongly typed"?
+Requires every variable to be declared with its type before its FIRST use.
+
+What are the 3 ways to initialize variables?
+c-like initialization, constructor initialization, uniform initilialization
+
+Give an example of c-like initialization? (inherited from C)
+int x = 0; // type identifier = initialValue;
+
+Give an example of constructor initialization (introduced by C++)
+int x (0); // type identifier (initialValue);
+
+Give an example of uniform initialization
+int x {0}; // type identifier {initialValue}
+
+What is a literal?
+A literal is used to express a particular value.
+
+What is the syntax for preprocessor definitions to name constant values?
+#define identifier replacement (no semicolon)
+
+Describe the sizeof operator.  What does it return?
+Accepts a type or a variable and returns the size in bytes: int x = sizeof(char)
+
+How do you get the entire line from std::cin?  (cin considers spaces termination)
+std::getline(std::cin, variableName);
+
+What does std::stringstream do?
+int x; getline(cin, someInt); stringstream(someInt) >> x;
+
+Control flow "break" statement:
+Leave a loop even if the conditional is not yet fulfilled
+
+Control flow "continue" statement:
+Skip the rest of a block in a loop as if the end of the statement block had been reached
+
+A C++ program always starts by calling the ____() function:
+A C++ program always starts by calling the main() function
+
+Can a function be overloaded based on its return type?
+No, functions can only be overloaded based on parameters
+
+What is the purpose of namespaces?
+Group named entities that would otherwise have wider scope
+
+What is the syntax for creating a namespace?
+namespace foo { /* ... */ }
+
+What is the syntax for using a namespace?
+using namespace foo; someFooFunction(someFooVariable, bar::someBarVariable);
+
+Static Storage vs Automatic Storage
+STATIC: global, namespace, or static variables. AUTOMATIC: local variables
+
+Variables with static storage that are not initialized have a value of ...
+0
+
+Variables with automatic storage that are not initialized have a value of ...
+undetermined value (779647075 or something similar)
+
+An array is...
+A series of elements of the same type placed in contiguous memory locations
+
+Contiguous means...
+sharing a common border, or next to each in sequence
+
+Syntax for declaring an array in cpp:
+typeOfElements identifier[numberOfElements]; int foo[5];
+
+What is an 'lvalue'?
+A locator value.  An value that occupies some identifiable location in memory
+
+What is an 'rvalue'?
+A read value.  A value stored temporarily
+
+What is meant by 'LHS'?
+The left hand side of an assignment statement.  (usually an lvalue)
+
+What is meant by 'RHS'?
+The right hand side of an assignment statement. (can be an lvalue or rvalue)
+
+Parameters are variables defined which are used when the function is...
+declared
+
+Arguments are variables passed into the function when the function is ...
+called
+
+PARAMETERS are to ______ a function as ARGUMENTS are to ______ a function.
+PARAMETERS are to DECLARING a function as ARGUMENTS are to CALLING a function.
+
+Dynamic Memory is to the ____ as Automatic Memory is to the ____.
+Dynamic Memory is to the HEAP as Automatic Memory is to the Stack/Static Memory
+
+Where are local variables allocated? (stack or static memory)
+stack
+
+Where are static and global variables allocated? (stack or static memory)
+static memory
+
+What is another name for STATIC MEMORY?
+STATIC MEMORY can also be referred to as THE DATA SEGMENT
+
+Is it possible to access memory or allocate memory on the heap without pointers?
+Absolutely not
+
+The arrow operator (->) does two things in one.  What are they?
+Dereferences a ptr to a compound type.  Access a member variable or function
+
+What is a type alias?
+A different name by which a type can be identified
+
+What is the syntax for type aliases (using and typedef)?
+typedef char C; using C = char;
+
+If you don't know what TYPE a value might be a _____ is a good data structure.
+If you don't know what TYPE a value might be a UNION is a good data structure.
+
+What is an access specifier as it relates to classes?
+private, public, protected
+
+Describe the 'private' access specifier
+Priv members accessible only by either members of the same classes or 'friends'
+
+Describe the 'protected' access specifier
+Protected members are accessible from either same class, or derived class
+
+Describe the 'public' access specifier
+Public members are accessible anywhere the object is within scope
+
+What is the default access specifier is not explicitly declared?
+Private
+
+What is the name of this operator? ::
+:: is the scope operator
+
+If a class has no constructor, or a constructor with zero params, do you need parentheses to initialize the object?
+No
+
+Uppercase this char: char a = 'a';
+a += 'A' - 'a'; or a -= 32;
+
+Lowercase this char: char A = 'A';
+A -= 'A' - 'a'; or A += 32;
+
+What are the 6 special member functions?
+default constructor, destructor, copy constructor, copy assignment, move constructor, move assignment
+
+A 'default constructor' is one which...
+has no parameters or all optional parameters
+
+A 'destructor' is is called when an object is...
+destroyed from memory.  It cleans up any lose ends such as dynamically allocated memory
+
+The syntax for declaring a destructor is what?
+~Example() {delete someMemberVariablePointer}
+
+A copy constructor is a contructor whose first parameter is of type...
+'reference to the class itself'
+
+The copy assignment special member fn is an overload of operator=.  Its return type is typically..
+a reference to the object it is being assigned to
+
+How do you explicitly choose which special member functions are included or excluded?
+Example() = default; (default constructor will be used) Example(const Example &e) = delete; (can no longer use the copy constructor)
+
+What preprocessor directive is needed for INT_MIN and INT_MAX
+#include <limits.h> (not part of std::library so no namespacing the
+
+What does the 'new' keyword return?
+It returns a pointer that points to the address on the heap of the newly allocated object
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

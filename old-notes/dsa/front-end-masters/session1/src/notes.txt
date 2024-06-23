@@ -1,0 +1,17 @@
+Big-O Complexity
+
+Common Complexities:
+    O(1) - constant
+    O(logn) - logn
+    O(n) - linear
+    O(nlogn)
+    O(n^2)
+    O(2^n)
+    O(n!)
+
+Arrays:
+    An array is a continuous, unbreaking memory space that contains a certain about of bytes
+    Arrays are fixed size, continiguous memory chunks
+    You cannot "grow" arrays
+    There are no insertAt, push, or pop.  You can however, implement those methods yourself or use those built in methods
+

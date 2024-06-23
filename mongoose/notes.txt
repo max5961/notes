@@ -1,0 +1,351 @@
+-------------------------------------------------------------------------------
+MONGOOSE
+-------------------------------------------------------------------------------
+https://mongoosejs.com/docs/index.html
+-------------------------------------------------------------------------------
+
+GETTING STARTED AND CONNECTING TO A MONGODB
+-------------------------------------------------------------------------------
+Install mongoose: npm install mongoose
+
+    demo.js
+    ---------------------------------------
+    import mongoose, { Schema } from "mongoose";
+
+    async function main() {
+        // This won't connect, but assume it does
+        await mongoose.connect("mongodb://127.0.0.1:27017/test");
+    }
+
+    main().catch(console.error);
+
+    const kittySchema = new Schema({
+        name: String,
+    });
+
+    kittySchema.methods.speak = function () {
+        const greeting = this.name
+            ? `Meow my name is ${this.name}`
+            : "I dont have a name";
+
+        console.log(greeting);
+    };
+
+    // Use kittySchema to compile kittySchema into our Kitten Model
+    const Kitten = mongoose.model("Kitten", kittySchema);
+
+    const mittens = new Kitten({ name: "Mittens" });
+    mittens.speak(); // "Meow my name is Mittens"
+
+A Model is a class with which we use to construct documents.  In the case of our
+Kitten model, each document by the Kitten model will have the behaviors declared
+in our kittySchema.
+
+TO SAVE A DOCUMENT TO THE DATABASE:
+
+    async function saveKitty(kitty) {
+        await kitty.save();
+    }
+
+    saveKitty(mittens)
+
+TO SEARCH FOR A MODEL IN THE DB:
+    // Find all Kittens
+    async function findKitties() {
+        return await Kitten.find();
+    }
+
+    // Find a Kitty by Regex (or string?)
+    async function findKittiesByName(name) {
+        return await Kitten.find(name);
+    }
+
+    console.log(findKittiesByName(/^Mit/));
+
+
+SCHEMAS
+-------------------------------------------------------------------------------
+Each schema maps to a MongoDB COLLECTION and defines the SHAPE of the DOCUMENTS
+within that collection.
+
+    import mongoose, { Schema } from "mongoose";
+
+    const blogSchema = new Schema({
+        title: String,
+        author: String,
+        body: String,
+        comments: [{ body: String, date: Date }],
+        date: { type: Date, default: Date.now },
+        hidden: Boolean,
+        meta: {
+            votes: Number,
+            favs: Number,
+        },
+    });
+
+    // Mongoose allows you to add additional properties later on
+    blogSchema.add({
+        foo: String,
+    });
+
+
+IDS
+-------------------------------------------------------------------------------
+By default, Mongoose, adds an _id property to your schemas.  When you create a
+new document with the Schema Model, Mongoose will automatically create a new _id
+of type ObjectId to your new document.
+
+You can overwrite Mongoose's default _id property with your own, but then you
+will be responsible for setting it.  As a word of caution, Mongoose will refuse
+to save a top level document without an _id.
+
+const schema = new Schema({
+    dummy: String,
+});
+
+const Model = mongoose.model("Model", schema);
+const doc = new Model();
+
+console.log(doc._id instanceof mongoose.Types.ObjectId);
+
+
+SCHEMA / MODEL / DOCUMENT RELATIONSHIP
+-------------------------------------------------------------------------------
+SCHEMAS are compiled into MODELS.  MODELS are used to create instances of
+themselves and we call these instances DOCUMENTS.
+
+
+INSTANCE METHODS
+-------------------------------------------------------------------------------
+Documents have many of their own BUILT-IN instance methods.  We can also define
+our own custom document instance methods.
+
+    const animalSchema = new Schema(
+        { name: String, type: String },
+        {
+            methods: {
+                findSimilarTypes(cb) {
+                    return mongoose.model("Animal").find({ type: this.type }, cb);
+                },
+            },
+        },
+    );
+
+    // OR
+
+    animalSchema.methods.findSimilarTypes = function (cb) {
+        return mongoose.model("Animal").find({ type: this.type }, cb);
+    };
+
+It is advised to NOT overwrite the builtin document instance methods.
+
+
+STATIC METHODS
+-------------------------------------------------------------------------------
+The same thing as an instance methods, except that you call it with the Model
+name rather than the instance of the Model as the name suggests.
+
+
+VIRTUALS
+-------------------------------------------------------------------------------
+These are properties that do not get saved to the database.  For example, you
+could create a 'virtual' so that you could more easily print out a first and
+last name together, without redundantly adding a 'fullname' field to the db.
+This also allows you to SET the first and last name with a single setter
+function.
+
+    import mongoose, { Schema } from "mongoose";
+
+    const personSchema = new Schema(
+        {
+            name: {
+                first: String,
+                last: String,
+            },
+        },
+        {
+            virtuals: {
+                fullName: {
+
+                    // Getter
+                    get() {
+                        return `${this.name.first} ${this.name.last}`;
+                    },
+
+                    // Setter
+                    set(fullName) {
+                        this.name.first = fullName.split(" ")[0];
+                        this.name.last = fullName.split(" ")[1];
+                    }
+                },
+            },
+        },
+    );
+
+    // OR by using the 'virtual' method
+
+    personSchema.virtual("fullName").get(function () {
+        return `${this.name.first} ${this.name.last}`;
+    });
+
+
+***** STOPPED SCHEMAS SECTION AT VIRTUAL
+https://mongoosejs.com/docs/guide.html
+
+
+-------------------------------------------------------------------------------
+SCHEMA TYPES
+-------------------------------------------------------------------------------
+https://mongoosejs.com/docs/schematypes.html
+-------------------------------------------------------------------------------
+A Mongoose schema is essentially a configuration object for a given Mongoose
+model.  A SchemaType is then a configuration object for an individual property.
+
+A SchemaType is just a configuration object for Mongoose.  An instance of
+Mongoose.ObjectId doesn't actually create MongoDB Object.IDs, it just configures
+the PATH in a SCHEMA.
+
+The following are valid SchemaTypes in Mongoose:
+
+    String
+    Number
+    Date
+    Buffer
+    Boolean
+    Mixed
+    ObjectId
+    Array
+    Decimal128
+    Map
+    Schema
+    UUID
+    BigInt
+
+You can use Schema.Types.<SchemaType> to leverage the capabilties of LSP
+
+    const schema = new Schema({
+
+        // both do the same thing
+        foo: Schema.Types.String,
+        bar: String,
+
+    })
+
+
+SCHEMATYPE OPTIONS
+-------------------------------------------------------------------------------
+type is a reserved keyword in Mongoose, so it cannot be used as a property
+without providing a workaround.
+
+DEMONSTRATION OF HOW THE TYPE KEYWORD WORKS IN MONGOOSE:
+
+    const schema1 = new Schema({
+
+        // test property is of type String, and must be lowercase
+        test: { type: String, lowercase: true },
+    })
+
+
+WORKAROUND FOR PROPERTIES NAMED TYPE:
+
+    const schema1 = new Schema({
+        type: { type: String },
+    })
+
+LIST OF TYPES THAT APPLY TO ALL SCHEMATYPES:
+    required
+    default
+    select
+    validate
+    get
+    set
+    alias
+    immutable
+    transform
+
+
+    const numberSchema = new Schema({
+        integerOnly: {
+            type: Number,
+            get: (v) => Math.round(v),
+            set: (v) => Math.round(v),
+            alias: "i",
+        },
+    });
+
+    const NumberModel = mongoose.model("NumberModel", numberSchema);
+
+    const doc = new NumberModel();
+    doc.integerOnly = 2.001;
+    console.log(doc.integerOnly); // 2
+    console.log(doc.i); // 2
+
+    doc.i = 3.001;
+    console.log(doc.integerOnly); // 3
+    console.log(doc.i); // 3
+
+STRING SCHEMA TYPES
+-------------------------------------------------------------------------------
+lowercase: boolean
+uppercase: boolean
+trim: boolean (execute .trim() on the value?)
+match: RegExp
+enum: Array, (is the string in the array?)
+minLength: Number
+maxLength: Number
+populate: Object (sets default populate options)
+
+NUMBER SCHEMA TYPES
+-------------------------------------------------------------------------------
+min: Number
+max: Number
+enum: Array, (is the number in the array?)
+populate: Object (sets default populate options)
+
+DATE SCHEMA TYPES
+-------------------------------------------------------------------------------
+min: Date
+max: Date
+expires: Number or String, creates a TTL (Time To Live before discarded) with
+the value expressed in seconds
+
+USAGE NOTES
+-------------------------------------------------------------------------------
+If you declare a path as a String, then if you pass in a value which has a
+toString() method, Mongoose will automatically call it, unless the element is an
+Array (or if typeof element === 'string').  Similar rules apply for Number types.
+If the passed object has a valueOf() method, Mongoose will call it and assign
+the value to the path.
+
+DATES USAGE
+-------------------------------------------------------------------------------
+Date types are immutable in Mongoose.  Modifying a Date type will not save
+changes to the database.  To override this, use
+doc.markModified('pathToYourDate') before saving.
+
+
+MIXED TYPE
+-------------------------------------------------------------------------------
+The 'typescript any' of Mongoose
+
+    Schema.Types.Mixed
+
+    // OR
+
+    {}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

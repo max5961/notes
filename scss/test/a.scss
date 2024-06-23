@@ -1,0 +1,9 @@
+@use "./b";
+
+.test-a {
+  color: green;
+  background-color: greenyellow;
+  background-color: yellow;
+  position: fixed;
+  font-size: 10px;
+}

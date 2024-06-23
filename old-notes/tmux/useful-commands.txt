@@ -1,0 +1,10 @@
+tmux new-session: running just tmux from the terminal will create a new session by default
+
+tmux attach-session -t [session #] (session # starts at 0)
+
+tmux detach: detach from a session and return to the terminal
+    prefix d
+
+tmux kill-server
+
+prefix w: show all sessions

@@ -1,0 +1,1571 @@
+-------------------------------------------------------------------------------
+Chapter 5 - Quoting
+https://tldp.org/LDP/abs/html/quoting.html
+-------------------------------------------------------------------------------
+- when referencing a variable its generally advisable to enclose its name in
+double quotes
+- this is to prevent the reinterpretation of special characters within the
+quoted string except for $, `, and \
+- keeping $ as a special character within double quotes permits referencing a
+quoted variable
+
+    # splits $List by whitespace in the for loop
+    List="one two three"
+    for a in $List
+    do
+        echo "$a"
+    done
+    # one # two # three
+
+    # wrapping $List preserves the whitespace in the variable
+    for a in "$List"
+    do
+        echo "$a"
+    done
+    # one two three
+
+- since single quotes are "full quoting", the special meaning of $ is truned off
+- therefore you cannot reference variables by enclosing them in single quotes
+    a=5
+    echo '$a'   # output is $a, not 5
+
+- encapsulating ! within double quotes gives an error when used from the command
+line, but this problem does not occur within a script
+
+### Escaping
+    \n: newline
+    \r: return
+    \t: tab
+    \v: vertical tab
+    \b: backspace
+    \a: alert
+    \": gives quote literal its literal meaning
+    \$: gives the dollar sign its literal meaning
+    \\: gives the backslash its literal meaning
+
+-------------------------------------------------------------------------------
+Chapter 3 - Special Characters
+https://tldp.org/LDP/abs/html/special-chars.html
+-------------------------------------------------------------------------------
+    Comments [#]
+        - lines beginning with a # (with the exception of #!) are comments and
+        will not be executed
+        - comments may follow whitespace at the beginning of a line
+        - comments may occur following the end of a command
+
+    Command Separator [;]
+        - permits putting two or more commands on the same line
+            echo hello; echo there
+
+    Terminator [;;]
+        - used in a case options
+            case "$var" in
+                abc) echo "\$var = abc" ;;
+                xyz) echo "\$var = xyz" ;;
+            esac
+
+    Dot Command [. or ..]
+        - a filename with a leading dot means a "hidden file" (dotfile)
+        - the plain ls command will not show hidden files
+
+        - when working with directory names:
+            - a SINGLE dot represents the current working directory
+            - TWO dot s represent the parent directory
+
+        - the dot often appears as the destination dir of a file movement command
+            cp /home/bozo/path/to/dir/* .
+
+    Partial Quoting vs Full Quoting ["" or '']
+        - partial quoting = double quotes
+            - preserves MOST special chars within the string from interpretation
+        - full quoting = single quotes
+            - preseres ALL special chars within the string from interpretation
+
+        - full quoting (single quotes) are therefore a stronger form of quoting
+        than double quotes....however you would want to use partial quoting most
+        of the time.  For example, when referencing a variable, if you full quote
+        it, the $ char is read literally and the variable will no longer be
+        referenced. The string will be interpreted in its literal sense.
+
+    Comma Separator [,]
+        - links together a series of arithmetic operations
+        - ALL operations are evaluated.  However, only the LAST is returned
+            let "t2 = ((a = 9, 15 / 3))" # t2 = 15 / 3
+
+    Escape [\ backslash]
+        - escapes the proceeding character
+
+    Filename Path Separator [/ forward slash]
+        - also the division operator
+        - in the context of filepaths path/to/file
+
+    Null Command [: colon]
+        - a do-nothing operation
+        - considered a synonym for the shell builtin "true"
+        - : itself is a bash builtin and has an exit status of true (0)
+
+        # endless loop example
+        while :
+            do
+                operation-1
+                operation-2
+            done
+
+        - also serves as a field separator in /etc/passwd and the $PATH variable
+
+    Bang [!]
+        - reverses or negates the sense of a test or exit status
+        != (not equal)
+
+    Wild Card [*]
+        - matches every filename in a given directory
+
+    Arithmetic Operator [*]
+        - denotes multiplication in the context of arithmetic operations
+
+    Test Operator [?]
+        - indicates a test for a certain condition
+        - in the "double-parentheses construct", ? can serve as a ternary operator
+        (( var0 = var1<98?9:21 ))
+                         ^ ^
+
+    Variable Substitution [$]
+        - a $ prefixing a variable name indicates the "value" the variable holds
+
+    End of Line [$]
+        - in a regex, a $ addresses the end of a line of text
+
+    Exit Status Variable [$?]
+        - holds the exit satus of a command, function, or of the script itself
+
+    Proccess ID Variable [$$]
+        - holds the process ID of the script in which it appears
+
+    Positional Parameters [$@ or $*]
+        - $*
+            - all of the positional parameters seen as a single word
+            - "$*" must be quoted
+        - $@
+            - same as $* but each parameter is a quoted string
+            - "$@" must also be quoted, just like "$*"
+
+    Parentheses [()]
+        - Command Group
+            - a listing of commands with parentheses starts a "subshell"
+            a=123
+            ( a=456 )
+            echo "a = $a" # outputs: a = 123
+            # the a within parentheses acts as a local variable
+
+        - Array Initialization
+            - separated by spaces
+            my_array=(elem1 elem2 elem3)
+
+    Brace Expansion [{}]
+        - comma separated values with no spaces
+            cat {file1,file2,file3} > combined_file
+
+        - Extended Brace Expansion {a..z}
+            # initialize an array, using extended brace expansion
+            base64_charset= ( {A..Z} {a..z} {0..9} + / = )
+
+    Block of Code [{}]
+        - also referred to as an "inline group"
+        - the variables inside of a code block remain visible to the remainder
+        of the script.  This differs from a command group with parentheses (see
+        above)
+
+        #!/bin/bash
+        # reading lines in /etc/fstab
+        File=/etc/fstab
+        {
+        read line1
+        } < $File
+        echo "First line in $File is:"
+        echo "$line1"
+        exit 0
+
+    Placeholder For Text [{}]
+
+    Test [brackets]
+
+        - [] single bracket
+            - test an expression between []
+            - needs whitespace around the opening and closing brackets
+            - supports base file, string, and arithmetic tests
+
+        - [[]] nested brackets
+            - test expression between [[]]
+            - just like single bracket tests, need whitespace around the opening and
+            closing brackets
+            - more flexible than single bracket test
+            - supports more advanced string operations like pattern matching:
+                ==, !=, =~
+
+        - to test whether or not a command ran successfully:
+            # no brackets are used to test exit status of a command
+            if command; then
+
+    Array Element (index) [[index]]
+        - bash: starting index = 0
+        - zsh: starting index = 1
+
+    Integer Expansion [(()) nested parentheses]
+        - also referred to as the "double-parentheses construct"
+        - permits arithmetic expansion and evaluation
+        a=$(( 5 + 3 )) # a = 8
+
+    Redirection [ > &> >& >> < <>]
+        scriptname >filename
+            - redirects output of script to filename
+        command &>filename
+            - redirects both the stdout and the stderr of a command to filename
+        command >&2
+            - redirections stdout of command to stderr
+        scriptname >>filename
+            - appends the output of scriptname to filename
+        [i]<>filename
+            - opens the filename for reading and writing, assings file
+            descriptor i to it
+        Process Substitution
+            (command)>
+            <(command)
+        << and <<<
+            - redirect the output of a command block into the stdin of a
+            program or command
+        <,>
+            - ASCII comparison
+            veg1=carrots
+            veg2=tomatoes
+            if [[ "$veg1" < "$veg2" ]]; then
+                echo "$veg1 does indeed predede $veg2 in the dictionary"
+                echo -n "but this doesn't actually imply anything"
+            else
+                echo "What kind of dictionary are you using?!"
+            fi
+
+    Pipe [|]
+        - passes the output (stdout) of a previous command to the input (stdin)
+        of the next one, or to the shell
+        - this is method of chaining commands together
+        # merge and sort all ".lst" files, then delete duplicate lines
+        cat *.lst | sort | uniq
+        # find all instances of "word" in file1.txt and file2.txt
+        cat file1.txt file2.txt | grep word
+
+    Force Redirection >|
+        - forcibly overwrite a file
+
+    Logical OR operator ||
+    Logical AND operator &&
+
+    Run job in background &
+        - a command followed by an & will run in the background
+        - within a script, commands, and even loops may run in the background
+
+    Previous working directory [cd -]
+
+    Equals Assignment Operator [=]
+
+    Modulo [%]
+        - remainder of a division arithmetic operation
+
+    Home Directory [~]
+
+    Current Working Directory [~+]
+
+    Previous Working Directory [~- ]
+
+    Regex Match [=~]
+
+    Whitespace
+        - functions as a separator between commands and/or variables
+        - can be either spaces, tabs, blank lines, or any combination therof
+        - in some contexts, whitespace is not permitted (variable assignment)
+
+-------------------------------------------------------------------------------
+Chapter 4 - Introductin to Variables and Parameters
+https://tldp.org/LDP/abs/html/variables.html
+-------------------------------------------------------------------------------
+
+- variable substitution is retrieving the value of a variable
+- to declare a variable no whitespace is permitted on either side of the equal
+operator
+- variables are declared without the $ prefix
+- after a variable is declared it appears with the $ prefix
+- undeclared variables have a "null" alue --no assigned value (not zero!)
+
+    # declaring and using a variable
+    # SIMPLE
+    a=879
+    echo "The value of a is $a"
+
+    # COMMAND SUBSTITUTION USING BACKTICKS
+    word=`echo hello!` # assigns the result of echo command to "word"
+
+    # COMMAND SUBSTITUTION USING $()
+    # this is a newer method than backticks
+    arch=$(uname -m)
+
+### Bash variables are untyped
+(https://tldp.org/LDP/abs/html/untyped.html)
+    - bash variables are character strings, but permits arithmetic operations
+    and comparisons on variables
+    - the determining factor of whether or not an arithmetic operation or
+    comparison can be performed on a variable is if the variable contains only
+    digits
+
+    a=1234  # integer
+    let "a += 1"
+    # a is still an integer
+
+    b=BB34
+    let "b += 1"
+    echo $b  # echoes 1
+
+### Special Variable Types
+(https://tldp.org/LDP/abs/html/othertypesv.html)
+    - local variables
+        - variables visible only within a code block or function
+    - environment variables
+        - variables that affect the behavior of the shell and user interface
+        - each process has an "environment", or "group of variables" that the
+        process may reference
+        - every time a shell starts it creates shell variables that correspond
+        to its own environment variables
+        - updating or adding new environment variables causes the shell to
+        update its environment, and all of shell's child processes (the commands
+        it executes) inherit this environment
+        - environments have limited space
+        - creating too many environmental variables or ones that use too much
+        space may cause problems
+
+    - exporting environment variables
+        - if a script sets environment variables, they need to be "exported"
+        - the "export" command exports environment variables
+
+    - positional parameters
+        - arguments passed to the script from the command line $0, $1, $2, $3
+        - $0 is the name of the script itself, $1 is the first actual argument
+        - after $9, the arguments must be enclosed in brackets ${10}, ${11}
+        - the special variables $* and $@ denote all the positional parameters
+        - "$#" represents the number of arguments passed to the script
+
+-------------------------------------------------------------------------------
+Chapter 6 - Exit and Exit Status
+https://tldp.org/LDP/abs/html/exit-status.html
+-------------------------------------------------------------------------------
+### The "exit" command
+    - terminates a script
+    - can also return a value, which is then available to scripts parent process
+    - successful command returns a 0
+    - unsuccessfull command returns a non-zero value that can usually be
+    interpreted as an error code
+    - functions within a script can also return an exit status
+        - the last command executed in the function of a script determines the
+        exit status
+
+    - "exit nnn" may be used to deliver an nnn exit status to the shell
+        - nnn must be an integer in the 0 - 255 range
+
+    #!/bin/bash
+    COMMAND_1
+    ...
+    COMMAND_LAST
+    # will exit with the status of last command
+
+    # exit $? or even just ommitting the exit is the same thing as the line
+    # below
+    exit
+
+    - $? read the exit status of the last command executed.
+    - this is bash's way of giving functions a "return value"
+
+-------------------------------------------------------------------------------
+Chapter 7 - Tests
+https://tldp.org/LDP/abs/html/tests.html
+-------------------------------------------------------------------------------
+### Test Constructs
+    - an if/then construct tests whether the exit status of a list of commands
+    is 0 (0 means "success" by UNIX convention), and if so, executes one or more
+    commands
+    - the left bracket [ is a dedicated builtin command and a synonym for test
+    - technically, the closing right bracket is not needed in [] because bash
+    considers [ the builtin command for test.  However, newer versions of bash
+    require closing brackets
+    - the extended test command [[...]] performs comparisons in a manner more
+    familiar to other programming languages.
+    - [[ is a keyword not a builtin command like single left bracket
+    - *****brackets are not to be used to test the success of a command and can
+    cause unintended behaviors
+        - the brackets will test for truthiness and since the exit status or
+        output of the command is almost never NULL or an empty string, then the
+        brackets will almsot always evaluate the command for true even if it had
+        a non-zero exit status
+
+
+
+    #!/bin/bash
+    word=Linux
+    letter_sequence=inu
+    if echo "$word" | grep -q "$letter_sequence"
+    # -q option to grep to suppress output
+    then
+        echo "$letter_sequence found in $word"
+    else
+        echo "$letter_sequence not found in $word"
+    fi
+
+    if COMMAND_WHOSE_EXIT_STATUS_IS_0_UNLESS_ERROR_OCCURED
+        then echo "Command succeeded"
+        else echo "Command failed"
+    fi
+
+
+    ### Testing Conditions
+    # 0 is true
+    if [ 0 ]; then
+        echo "0 is true"
+    else
+        echo "0 is false"
+    fi
+
+    # 1 is true
+    if [ 1 ]; then
+        echo "1 is true"
+    else
+        echo "1 is false"
+    fi
+
+    # NULL (empty condition) is false
+    if [ ]; then # NULL empty condition
+        echo "NULL is true"
+    else
+        echo "NULL is false"
+    fi
+
+    ### elif
+    if [ condition1 ]; then
+        command1
+        command2
+    elif [ condition2 ]; then
+        command3
+        command4
+    else
+        default-command
+    fi
+
+    ### test for input
+    # -z is a flag for the left bracket built-in that checks string resolves to
+    # true if the string is zero length
+    if [ -z "$1" ]; then                        # if [ $1 IS ZERO LENGTH ]
+        echo "No command-line arguments"
+    else
+        echo "First command-line argument is $1"
+    fi
+
+
+    ### TEST FLAGS USED WITHIN [] or [[]]
+        # STRING TESTS
+            -z: true if length of string is zero
+            -n: true if length of string is non-zero
+            =: string1 = string2: true if strings are equal
+            !=: string1 != string2: true if string are NOT equal
+            ==: is equal to
+                The == comparison operator behaves differently within a
+                double-brackets test than within single brackets.
+                [[ $a == z* ]]   # True if $a starts with an "z" (pattern matching).
+                [[ $a == "z*" ]] # True if $a is equal to z* (literal matching).
+                [ $a == z* ]     # File globbing and word splitting take place.
+                [ "$a" == "z*" ] # True if $a is equal to z* (literal matching).
+
+        # FILE TESTS
+            -f: true if FILE exists AND is a regular file
+            -d: true if FILE exits AND is a directory
+            -e: true if FILE exists
+            -a: identical to -e but has been deprecated
+            -b: true if FILE is a block device
+            -c: true if FILE is a character device
+            -p: true if FILE is a pipe
+            -h: true if FILE exists AND is a symbolic link
+            -L: true if FILE exists AND is a symbolic link
+            -r: true if FILE exists AND is readable
+            -w: true if FILE exists AND is writeable
+            -x: true if FILE exists AND is executable
+            -g: true if FILE exists AND "set-group-id" (sgid) flag set on file
+            -u: true if FILE exists AND "set-user-id" (suid) flag set on file
+            -k: true if FILE exists AND "save-text-mode" flag set on file
+            -s: true if FILE exists AND has a size greater than zero
+            -S: true if FILE exists AND is a socket
+            -t: true if FILE exists AND is associated witha  terminal device
+                - may be used to check whetehr the stdin [ -t 0 ] or stdout [ -t 1 ]
+                in a given script is terminal
+            -O: true if FILE exists AND you are the owner of the file
+            -G: true if FILE exists AND group-id of  file same as yours
+            -N: true if FILE exists AND file modifiedsince it was last read
+            f1 -nt f2: file f1 is newer than f2
+            f1 -ot f2: file f1 is older than f2
+            f1 -ef f2: files f1 and f2 are hard links to the same file
+            !: reversesthe sense of the tests above
+
+        # ARITHMETIC TESTS
+            -eq: true if integers are equal
+            -ne: true if integers are NOT equal
+            -lt: true if INT1 is less than INT2
+            -le: true if INT1 is less than or equal to INT2
+            -gt: true if ITN1 is greater than INT2
+            -ge: true if INT1 is greater than or equal to INT2
+            -a: AND     # NOTE can also do: if [ exp1 ] && [ exp2 ]; then # && IS OUTSIDE OF THE BRACKETS
+            -o: OR      # NOTE can also do: if [ exp1 ] || [ exp2 ]; then # || IS OUTSIDE OF THE BRACKETS
+            BELOW CAN ONLY BE USED FOR DOUBLE BRACKETS [[ ... ]]
+                &&: AND
+                ||: OR
+                <,>,<=,>=: less than, greater than,.....
+
+        ###
+        if [ ! -n "$1" ]; then  # length of string is NOT non-zero
+            echo "You have not provided me an argument brah"
+            exit 1
+        else
+            echo "Thank you for providing me your argument: "$1" brah"
+            exit 0
+        fi
+
+    ### [[...]]
+        - no filename expansion or word splitting takes place between [[ and ]],
+        but there is parameter expansion and command substitution
+        - for example, can not evaluate ls *.txt within [[...]]
+        - can use &&, ||, <, and > operators within a [[ ]] test, which is more
+        similar to conventional programming languages
+
+
+    ### ARITHMETIC TESTS USING (())
+        - the (( ... )) construct evaluates and tests numerical expressions
+        - the exit status is opposite from the [ ... ] construct
+        - the exit status still correlates to the bash style where an exit status
+        of 0 correlates to true, and an exit status greater than or equal to 1
+        is correlates most closely to false.  However, while the exit statuses
+        may correlate to the bash success/unsuccess, the exit status within
+        the (( ... )) construct more closely resembles a true/false in conventional
+        programming languages.
+
+
+        #!/bin/bash
+
+        (( 0 ))
+        echo "Exit status of \"(( 0 ))\" is $?"     # 1 (false)
+
+        (( 1 ))
+        echo "Exit status of \"(( 1 ))\" is $?"     # 0 (true)
+
+        (( 5 > 4 ))
+        echo "Exit status of \"(( 5 > 4 ))\" is $?"   # 0 (true)
+
+        (( 5 < 4 ))
+        echo "Exit status of \"(( 5 < 4 ))\" is $?"   # 1 (false)
+
+        (( 5 - 5 ))
+        echo "Exit status of \"(( 5 - 5 ))\" is $?"     # 1 (false)
+
+        (( 5 / 4 ))
+        echo "Exit status of \"(( 5 / 5 ))\" is $?"     # 0 (true)
+
+        (( 1 / 2 ))
+        # division result is < 1 which is rounded to zero and therefore false
+        echo "Exit status of \"(( 1 / 2 ))\" is $?"    # 1 (false)
+
+        (( 1 / 0 ))
+        # illegal division by 0
+        echo "Exit status of \"(( 1 / 0 ))\" is $?"    # 1 (false)
+
+
+        # EXAMPLE OF (( ... )) in an if-then test
+        #!/bin/bash
+        var1=5
+        var2=4
+        # note that var1 and var2 do not have the preceding $ in a (())
+        # construct
+        # this is because in an arithmetic context, (( )) automatically
+        # interprets words as variable names
+        if (( var1 > var2 ))
+        then
+            echo "$var1 is greater than $var2"
+        fi
+        exit 0
+
+-------------------------------------------------------------------------------
+Chapter 8 - Operators
+https://tldp.org/LDP/abs/html/ops.html
+-------------------------------------------------------------------------------
+### ARITHMETIC OPERATORS
++
+    plus
+-
+    minus
+*
+    multiplication
+/
+    division
+**
+    exponentiation
+%
+    modulo or mod (returns remainder of an integer division operation)
++=
+    plus-equals, increment variable by a constant
+-=
+    minus-equals, decrement a variable by a constant
+/=
+    slash-equal, divide a variable by a constant
+%=
+    mod-equal, remainder of dividing a variable by a constant
+
+### BITWISE OPERATORS
+Bitwise operators seldom make an appearance in shell scripts.  Their chief use
+seems to be manipulating and testing values read from ports or sockets.  "Bit
+flipping" is more relevant to compiled languages such as C and C++, which
+provide direct access to system hardware.
+<<
+    bitwise left shift (multiplies by 2 for each shift position)
+<<=
+    left-shift-equal
+>>
+    bitwise right shift (divides by 2 for each shift operation)
+>>=
+    right-shift-equal
+&
+    bitwise AND
+&=
+    bitwise AND-equal
+|
+    bitwise OR
+|=
+    bitwise OR-equal
+~
+    bitwise NOT
+^
+    bitwise XOR
+^=
+    bitwise XOR-equal
+
+### DOUBLE PARENTHESES CONSTRUCT (( .. ))
+The double-parentheses construct permits arthimetic expansion and evaluation.
+It also allows for C-style manipulation of variables in Bash
+
+    #!/bin/bash
+    (( a = 23 ))  #  Setting a value, C-style,
+                  #+ with spaces on both sides of the "=".
+    echo "a (initial value) = $a"   # 23
+
+    (( a++ ))     #  Post-increment 'a', C-style.
+    echo "a (after a++) = $a"       # 24
+
+    (( a-- ))     #  Post-decrement 'a', C-style.
+    echo "a (after a--) = $a"       # 23
+
+
+    (( ++a ))     #  Pre-increment 'a', C-style.
+    echo "a (after ++a) = $a"       # 24
+
+    (( --a ))     #  Pre-decrement 'a', C-style.
+    echo "a (after --a) = $a"       # 23
+
+    exit 0
+
+-------------------------------------------------------------------------------
+Chapter 11 - Loops and Branches
+https://tldp.org/LDP/abs/html/loops.html
+-------------------------------------------------------------------------------
+### LOOPS
+- a loop is a block of code that iterates a list of commands as long as the loop
+control condition is true
+
+# FOR LOOPS
+
+    for arg in [list]
+        - This is the basic looping construct.  it differs signicantly from its
+        C counterpart
+
+        for arg in [list]; do
+            command(s)
+        done
+
+        #!/bin/bash
+        for planet in Mercury Venus Earth Mars Jupiter Saturn Uranus Neptune Pluto
+        do
+            echo $planet # each planet is on a separate line
+        done
+
+        for planet in "Mercury Venus Earth Mars Jupiter Saturn Uranus Neptune Pluto"
+        do
+            echo $planet # each planet is on the same line
+            # The entire 'list' enclosed in quotes creates a single variable
+            # whitespace is incorporated into the variable
+        done
+
+        #!/bin/bash
+        # file info
+        # operating on a file list contained in a variable
+        FILES="/usr/sbin/accept
+        /usr/sbin/pwck
+        /usr/sbin/chroot
+        /usr/bin/fakefile
+        /sbin/badblocks
+        /sbin/ypbind" # List of files.  /usr/bin/fakefil is a dummy file
+
+        # note that because the $FILES variable is a list of items separated by
+        # whitespace (/n in this example), then if you were to put "$FILE" in
+        # double quotes it would ensure the variable is treated as a single string
+        # and iterate only once over the single string.  By NOT quoting $FILES,
+        # the loop separates items based on the fields IFS value (\n in this case,
+        # but it could be \s, or \t by default as well) and iterates over every
+        # item that is separated by the IFS (internal field separator)
+
+        for file in $FILES; do
+            if [ ! -e "$file" ]; then  # check if file exists
+                echo "$file does not exist brah"
+                continue
+            fi
+            ls -l $file | awk '{ print $8 "         file size: " $5 }'
+            whatis 'basename $file ' # File info
+            # Note that the whatis database needs to have been set up for this
+            # to work.  To do this root run /usr/bin/makewhatis
+        done
+
+
+        ### OPERATING ON FILES WITH A FOR LOOP
+        #!/bin/bash
+        # example using globbing
+        # note that globbing does not match dotfiles
+        for fine in *; do # for file in $PWD
+            ls -l "$file" # lists the file in the $PWD
+        done
+
+        for file in [jx]*; do
+            rm -f $file # removes only files beginning with "j" or "x" in $PWD
+            echo "Removed file \"$file\""
+        done
+
+        #!/bin/bash
+        # generating the list in a for loop with command substitution
+        NUMBERS="9 7 3 8 37.53"
+        for number in $( echo $NUMBERS ); do
+            echo -n "$number"
+        done
+
+        #!/bin/bash
+        # command substitution example with function
+        generate_list() {
+            echo "one two three"
+        }
+        for word in $(generate_list); do
+            echo "$word"
+        done
+
+### WHILE LOOPS
+    - Testss for a condition at the top of a loop and keeps looping as long as
+    that condition is true.  In contrast to a for loop, a while loop finds use
+    in situations where the number of loop repetitions is not known beforehand
+
+    while [ condition ]
+    do
+        command(s)...
+    done
+
+    - The bracket construct in a while loop is nothing more than the test brackets
+    used in an if/then test.  A while loop can also legally use the more versatile
+    double brackets construct as well and even the double parentheses construct
+    - note that the test brackets are not mandatory in a while loop
+
+### UNTIL LOOPS
+    - This construct tests for a condition at the top of a loop and keeps looping
+    as long as that condition is false.  This is the opposite of a while loop
+
+    until [ condition-is-true ]
+    do
+        commands(s)...
+    done
+
+### NESTED LOOPS
+    - A nested loop is a loop within a loop.  The first pass of the outer loop
+    triggers the inner loop, which executes to completion.  Then the second pass
+    of the outer loop triggers the inner loop again.  This repeats until the
+    outer loop finishes.
+    - A "break" within either the inner or outer loop would interrupt the inner
+    or outer loop respectively
+
+### LOOP CONTROL
+    break, continue
+        - the break and continue loop control commands correspond exactly to
+        their counterparts in other programming languages.
+        - The break command terminates the loop (breaks out of it)
+        - The continue command causes a jump to the next iteration of the loop,
+        skipping all of the remaining command in that particular loop cycle
+
+        - The break and continue commands take an optional parameter
+
+        - A plain break terminates only the innermost loop in which it is embedded,
+        but a break N breaks out of N levels of loop
+        #!/bin/bash
+        for outloop in 1 2 3 4 5; do
+            echo -n "Group $outerloop: ";
+            for innerloop in 1 2 3 4 5; do
+                echo -n "$innerloop "
+                if [ "$innerloop" -eq 3 ]; then
+                    break # doesn't break out of both loops, but break 2 will
+                fi
+            done
+        done
+
+        -  A plain continue cuts short the current iteration within its loop, but
+        a continue N terminates all remain iterations at its loop level and continues
+        with the next iteration at the loop, N levels above
+        #!/bin/bash
+        for i in I II III IV V; do
+            echo; echo -n "Group $i: "
+
+            for j in 1 2 3 4 5 6 7 8 9 10; do
+                if [[ "$i" -eq 7 && "$j" = "III" ]]; then
+                    continue 2 # continue at loop on "i" with "IV"
+                fi
+
+                echo -n "$j" # 7 8 9 10 will not echo on "Group III"
+            done
+        done
+
+
+### TESTING AND BRANCHING
+- The case and select constructs are technically not loops since they do not
+iterate the execution of a code block.  However, like loops, they direct program
+flow according to conditions at the top of bottom of the block
+
+case(in)/esac
+    - the case construct is the shell scripting analog to switch in C/C++.  It
+    permits branching to one of a number of code blocks, depending on condition
+    tests.  It serves as a kind of shorthand for multiple if/then/else statements
+    and is an appropriate tool for creating menus
+
+    case "$variable" in
+        "$condition1")
+        command...
+        ;;
+
+        "$condition2")
+        command...
+        ;;
+    esac
+
+    - quoting the variables is not mandatory, since word splitting does not take
+    place
+    - Each test lin eends with a right paren)
+    - Each condition block ends with a double semicolon ;;
+    - If a condition tests true, then the associated commands execute and the case
+    block terminates
+    - the entire case block ends with an esac (case spelled backwards)
+
+    #!/bin/bash
+    # testing keypresses
+
+    echo; echo "Hit a key brah, then hit return"
+    read Keypress
+
+    case "$Keypress" in
+        [[:lower:]] ) echo "Lowercase letter";;
+        [[:upper:]] ) echo "Uppercase letter";;
+        [0-9] ) echo "Digit";;
+        * ) echo "Punctuation, whitespace, or other";;
+    esac
+
+
+    - see more examples at: https://tldp.org/LDP/abs/html/testbranch.html
+
+-------------------------------------------------------------------------------
+Chapter 12 - Command Substitution
+https://tldp.org/LDP/abs/html/commandsub.html
+-------------------------------------------------------------------------------
+- Command substitution reassigns the output of a command or even multiple commands
+- It plugs the command output into another context
+- The classic form of command substitution uses backquotes
+
+    # both of the below have the same result
+    testfile_listings=`ls *.txt`
+    textfile_listings=$(ls *.txt)
+
+- Command substitution invokes a subshell
+- Command substitution may result in word splitting
+
+    #!/bin/bash
+
+    # note that for the below examples, echo with the -n flag omits the trailing
+    # \n char from the end of the echo.  Therefore the assigned variables will
+    # not include the newlines, which is cleaner than having the variable assigned
+    # with a bunch of pesky newlines!
+
+    # without the echo statement in the for loop, this would not work!
+    variable1=`for i in 1 2 3 4 5; do
+        echo -n "$i"
+    done`
+    echo "variable1 = $variable1" # variable1 = 12345
+
+    i=0
+    variable2=`while (( i < 10 )); do
+        echo -n "$i"
+        (( i++ ))
+    done`
+    echo "variable2 = $variable2" # variable2 = 012345678910
+
+    # the above can also be written with the more modern syntax $()
+    i=0
+    variable3=$(while (( i < 5 )); do
+        echo -n "$i"
+        (( i++ ))
+    done)
+    echo "variable3 = $variable3" # variable3 = 12345
+
+
+Chapter 13 - Arithmetic Expansion
+https://tldp.org/LDP/abs/html/arithexp.html
+-------------------------------------------------------------------------------
+
+Chapter 10 - Manipulating Variables
+https://tldp.org/LDP/abs/html/manipulatingvars.html
+-------------------------------------------------------------------------------
+### MANIPULATING STRINGS
+    - bash supports a number of string manipulation operations but these tools
+    lack a unified focus
+    - some are a subset of parameter substitution, while others fall under the
+    functionality of the UNIX expr command
+    - there is inconsistent command syntax and overlap of functionality
+    - for a list of string manipulation operations read through the linked
+    portion of this chapter
+
+    # STRING LENGTH
+        #!/bin/bash
+        declare -r my_string="hello world"
+        # all of the below output 11
+        echo ${#my_string}
+        echo `expr length $my_string`
+        echo `expr "$string" : '.*'`
+
+    # INSERTING A BLANK LINE BETWEEN PARAGRAPHS IN A TEXT FILE
+        #!/bin/bash
+        declare -ri MINLEN=60
+        # assume lines shorter than $MINLEN char ending in a period terminate
+        #+ a paragraph
+        while read line; do     # for as many lines as the input file has  ...
+            echo "$line"
+            declare -i len=${#line}
+            if [[ "$len" -lt "$MINLEN" && "$line" =~ [*{\.}]$ ]]; then
+                echo  # add a blank line immediately after a short line
+                      #+ terminated by a period.
+            fi
+        done
+        exit
+
+    # SUBSTRING EXTRACTION
+        ${string:position}
+
+        #!/bin/bash
+        declare -r my_string="hello world"
+        echo "${my_string:0}"    # hello world
+        echo "${my_string:1}"    # ello world
+        echo "${my_string:2:4}"  # llo
+        # index from the right end of the string (put negative indexes in () )
+        echo ${my_string:-4}     # defaults to full string ${parameter:-default}
+        echo ${my_string:(-4)}   # orld
+
+    # GENERATING AN 8-CHARACTER "RANDOM" STRING
+        #!/bin/bash
+        # rand-string.sh
+        if [ -n "$1" ]; then
+            declare str0="$1"  # set start-string to first arg if present
+        else
+            declare str0="$$"  # ELSE use the script PID as a start-string
+        fi
+        declare -i pos=2
+        declare -i len=8
+        declare -r str1=$( echo "$str0" | md5sum | md5sum )
+        # doubly scramble by piping into md5sum twice
+        declare -r randstring="${str1:$pos:$len}"
+        echo "$randstring"
+        exit $?
+
+### SUBSTR
+    #!/bin/bash
+    # expr substr $string $ position $length
+    # extracts $Length chars from $string starting at $position
+    declare -r stringZ=abcABC123ABCabc
+    echo `expr substr $stringZ 1 2` # ab
+    echo `expr substr $stringZ 4 3` # ABC
+
+### SUBSTRING REMOVAL
+    #!/bin/bash
+    # ${string#substring} deletes shortest match of $substring from $string
+    # ${string##substring} deletes longest match of $substring from $string
+    declare -r stringZ=abcABC123ABCabc
+    echo ${stringZ#a*C}
+    echo ${stringZ##a*C}
+
+see link for more examples of string manipulation
+https://tldp.org/LDP/abs/html/manipulatingvars.html
+
+### PARAMETER SUBSTITUTION
+${parameter}
+    - same as $parameter, but less ambiguous.  In certain contexts, only ${parameter}
+    works
+    - may be used for concatenating variables with strings
+    #!/bin/bash
+    your_id=${USER}-on-${HOSTNAME}
+    echo "$your_id" # echoes max-on-asus
+
+${parameter-default}, ${parameter:-default}
+    - if parameter not set, use default
+
+    ### ${parameter-default}
+    #!/bin/bash
+    var1=1
+    var2=2
+    # var3 is unset
+    echo ${var1-$var2} # 1
+    echo ${var3-$var2} # 2
+    #           ^ note the $prefix
+    # regarding the no prefix on the first var in the syntax.  If you were to
+    echo a variable using the ${var} syntax you don't add another $ inside of the
+    curly braces.  This syntax is saying, if the first parameter is not set, use
+    the second one, which starts after the -$
+
+    ### ${parameter:-default }
+    #!/bin/bash
+    username1=
+    echo "username1 has been declared, but is set to null."
+    echo "username1 = ${username1-`whoami`}"
+    # will not echo because username1 is null
+    username2=
+    echo "username2 has been declared, but is set to null."
+    echo "username2 = ${username2:-`whoami`}"
+    # will echo because of :- rather than just - in condition test
+    echo "username3 has not been declared"
+    echo "username3 = ${username3-`whoami`}"
+    # will echo using just the - in condition test, because the username3 is not
+    null, just undefined
+
+    - the default parameter construct finds use in providing "missing"
+    command-line arguments in scripts
+    #!/bin/bash
+    DEFAULT_FILENAME=generic.data
+    filename=${1:-$DEFAULT_FILENAME}
+    # if no command-line arg passed into the script, then the filename will
+    be DEFAULT_FILENAME
+
+    - other parameter-default options
+    - for all of the below, the : makes a difference only when the $parameter
+    has been declared and is null, as in the example above
+        ${parameter=default}, ${parameter:=default}
+            if the parameter is NOT set, set it to default
+        ${parameter+alt_value}, ${parameter:+alt_value}
+            if parameter IS set, use alt_value, else use null string
+        ${parameter?err_msg}, ${parameter:?err_msg}
+            - if parameter is set, use it, else, print err_msg and abort the script
+            with an exit status on 1
+            - you can replace err_msg with your own error message or empty to get
+            the same result as err_msg
+            - echo ${HOSTTTTTTNAME?you have commited a spelling erro brah}
+
+        #!/bin/bash
+        ${HOSTNAME?} ${USER?} ${HOME?} ${MAIL?}
+        echo "If you are reading this, critical environmental varriables"
+        echo "have been set"
+        echo "If you are not reading this, then an err_msg has been printed"
+        echo "because one of the above environmental variables have NOT been set"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Chapter 9 - Another Look at Variables
+https://tldp.org/LDP/abs/html/variables2.html
+-------------------------------------------------------------------------------
+### INTERNAL VARIABLES
+# BUILTIN VARIABLES
+    $BASH
+        - the path to the bash binary itself
+        echo $BASH
+        /bin/bash
+    $BASH_ENV
+        - an environment variable pointing to a Bash startup file to be read
+        when a script is invoked
+    $BASH_SUBSHELL
+        - a variable indicating the subshell level
+    $BASHPID
+        - process ID of the current instance of Bash (not the same as the $$
+        variable but often gives the same result)
+    $BASH_VERSINFO[n]
+        - a 6-element array containing version information about the installed
+        release of bash
+    $BASH_VERSION
+        - the version of bash installed on the system
+        - less detailed than $BASH_VERSINFO[n]
+    $CDPATH
+        - colon-separated list of search paths available to the cd command
+    $DIRSTACK
+        - the top value in the directory stack
+    $EDITOR
+        - the default editor invoked by a script
+    $EUID
+        - "effective" user ID number
+    $FUNCNAME
+        - name of the current function
+        #!/bin/bash
+        xyz23 () {
+            echo "$FUNCNAME now executing."  # xyz23 now executing.
+        }
+        xyz23
+        echo "FUNCNAME = $FUNCNAME"  # FUNCNAME =
+                                     # Null value outside of a function
+    $GLOBIGNORE
+        - a list of filename patterns to be excluded from matching
+    $GROUPS
+        - groups current user belongs to
+    $HOME
+        - home directory of the user (usually /home/username)
+    $HOSTNAME
+        - the gethostname() function sets the Bash internal variable $HOSTNAME
+    $HOSTTYPE
+        - identifies system hardware
+    $IFS
+        - internal field separator
+        - determines how bash recognizes fields, or word boundaries, when it
+        interprets charcter string
+        - $IFS defaults to whitespace, but may be changed
+    $IGNOREEOF
+        - ignore EOF: how many end-of-files (control-D) the shell will ignore
+        before logging out
+    $LC_COLLATE
+        - controls collation order in filename expansion and pattern matching
+    $LC_CTYPE
+        - controls character interpretation in globbing and file matching
+    $LINENO
+        - the line number of the shell script in which this variable appeears
+        - used mostly for debugging purposes
+    $MACHTYPE
+        - machine type
+        - identifies the system hardware
+    $OLDPWD
+        - previous directory you were in
+    $OSTYPE
+        - operating system type
+    $PATH
+        - path to binaries, usually /usr/bin/, /usr/X11R6/bin/, /usr/local/bin
+    $PIPESTATUS
+        - array variable holding exit status(es) of last executed foreground
+        pipe
+    $PPID
+        - the parent process ID of a process
+    $PROMPT_COMMAND
+        - a variable holding a command to be executed just before the primary
+        prompt
+    $PS1
+        - the main prompt, seen at the command line
+    $PS2
+        - the secondary prompt, seen when additional input is expected
+        - displayed is ">"
+    $PS3
+        - the tertiary prompt, display in a select loop
+    $PS4
+        - the quartenary prompt, shown at the beginning of each line of output
+        when invoking a script with the -x [verbose trace] option
+        - displays as "+"
+    $PWD
+        - working directory
+        - this is the analog to the pwd builtin command
+    $REPLY
+        - the default value when a variable is not supplied to read
+    $SECONDS
+        - the number of seconds the script has been running
+    $SHELLOPTS
+        - the list of enabled shell options, a readonly variable
+    $SHLVL
+        - shell level, how deeply bash is nested
+        - if, at the command-line, $SHLVL is 1, then in a script it will
+        increment to 2
+    $TIMOUT
+        - if the $TMOUT environment variable is set to a non-zero value time,
+        then the shell prompt will time out after $time seconds and cause a
+        logout
+        - as of version 2.05b Bash you can now use $TMOUT in a script with read
+
+### POSITIONAL PARAMETERS
+
+    $0, $1, $2, etc
+        - positional parameters passed from command line to script, function, or
+        set to a variable
+    $#
+        - number of command-line arguments or positional parameters
+    $*
+        - all of the positoinal parameters, seen as a single word
+    $@
+        - same as $*, but each parameter is a quoted string
+    $!
+        - PID (process ID) of last job run in the background
+    $_
+        - special ariable set to final argument of previous command executed
+    $?
+        - exit status of a command, function, or the script itself
+    $$
+        - PID (process ID) of the script itself
+
+### TYPING VARIABLES: DECLARE OR TYPESET
+The declare or typeset builtins, which are exact synonyms, permit modifying the
+properties of variables.  This is a very weak form of the typing available in
+certain programming languages.  The declare command is specific to version 2 or
+later of Bash
+
+    # DECLARE/TYPESET OPTIONS
+    -r (readonly)
+        # this is the equivalent of a "const" type qualifier
+        # an attempt to change the value of a readonly variable fails with an
+        # error message
+        # example
+        declare -r var1=1
+        (( var1++ )) # x.sh: line 4: var1: readonly variable
+
+    -i
+        declare -i number
+        # the script will treat subsequent occurs of as an integer
+        number=3
+        number=three
+        echo "$number"
+        # outputs 0 because it tries to evaluate the string "three" as an
+        # integer
+
+        # certain arithmetic operations are permitted for declared integers vars
+        # without the need for expr or let
+        n=6/3
+        # n = 6/3
+        declare -i n
+        n=6/3
+        # n = 2
+
+    -a
+        declare -a indices
+        # declares the variable indices to be treated as an array
+
+    -f
+        # list all previously defined functions in the script
+        declare -f
+
+        declare -f function_name
+        # list just the function named
+
+    -x
+        declare -x var3
+        declare -x var3=373
+        # $var3 is declared as available for exporting outside the environment
+        # of the script itself
+
+
+    - declare can be helpful in identifying variables, environmental or
+    otherwise
+    declare | grep $HOME
+    HOME=/home/bozo
+
+### GENERATE RANDOM INTEGER
+$RANDOM is an internal Bash function that returns a psuedorandom integer in the
+range of 0-32767.  $RANDOM should NOT be used to generate an encryption key
+
+    #!/bin/bash
+    declare -ri MAXCOUNT=10
+    declare -i count=1
+    declare -i number
+
+    echo "$MAXCOUNT random numbers:"
+    echo "-------------------------"
+    while ((count < MAXCOUNT)); do
+        number=$RANDOM
+        echo $number
+        ((count++))
+    done
+    echo "-------------------------"
+
+    #!/bin/bash
+    # get a random number greater than 200 and less than 500
+    declare -ri lower_bound=200
+    declare -ri upper_bound=500
+    declare -i number=0
+    # use (( ... )) because it supports <, >, etc... operators
+    # [[ ]] supports <, >, etc... operators for arithmetic
+    # [[ ]] supports <, etc... but for string comparison
+    # could also use [[ ... ]] with -lt and -gt but this is cleaner
+    while ((number < lower_bound || number > upper_bound)); do
+        number=$RANDOM
+        let "number %= $upper_bound"
+    done
+    echo $number
+
+    #!/bin/bash
+    # pick random elements of an array representing a suite of cards
+    declare -ar suites=({2..10} "jack" "queen" "king" "ace")
+    declare -i number=0
+    for num in {0..10}; do
+        number=$RANDOM
+        let "number %= ${#suites[@]}"
+        item=${suites[$number]}
+        echo $item
+    done
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#!/bin/bash
+time="6.7"
+echo "$time * 0.5" | bc
+Into to Regular Expressions
+https://tldp.org/LDP/abs/html/x17129.html
+-------------------------------------------------------------------------------
+An expression is a string of characters.  Those characters having an
+interpretation above and beyond their literal meaning are called metacharacters.
+A quote symbol, for example, may denote speech by a perso, ditto, or a
+meta-meaning for the symbols that follow.
+
+Regular Expressions are sets of characters and/or metacharacters that match
+(or specify) patterns.
+
+A Regular Expression contains one or more of the following:
+    - a character set
+        - these are characters that retain their literal meaning
+        - the simplest form of a regex consists only of a character set
+    - an anchor
+        - an anchor designates the position in the line of text that the RE is
+        to match
+        - ^ and $ are anchors
+    - modifiers
+        - these expand or narrow the range of text the RE is to match
+        - modifers include: asterisks, brackets, and backslashes
+
+- The main uses for REs are text searches and string manipulation
+- An RE matches a single char or a set of chars
+
+### MODIFIERS
+    *
+        - matches any number of repeats of the character string or RE preceding
+        it, including zero instances
+        "123*" matches:
+            123123123 (repeating char set preceding *)
+            12333333333 (repeating last char before *)
+            12333333333123 (repeating last char before * AND repeating char set
+            preceding *)
+
+    .
+        - matches any one character, except for a newline
+        "123." matches:
+            123a from 123anychar
+            1234 from 123456
+
+    ^
+        - asserts the position to start searching from at the beginning of the
+        line
+        - sometimes depending on context, negates the meaning of a set of chars
+        in a RE
+        "^123" matches:
+            123 from 12345
+        "^123" does NOT match:
+            456123
+
+    $
+        - placed at the end of a refex and matches the end of a line
+        "123$" matches:
+            123 from 456123
+
+    []
+        - brackets enclose a set of chars to match in a single RE
+        "[a-z]" matches:
+            "hello world" from "hello world"
+        "[hwl]" matches:
+            "hllwl" from "hello world"
+        "[hwl ]" matches:
+            "hellwl " from "hello world"
+
+        [a-z] matches any lowercase chars in the range of a-z
+        [A-Z] matches any uppercase chars in the range of A-Z
+        [A-Za-z] matches any letter char
+        [0-9] matches any numberical chars 0-9
+
+
+        - inside of brackets, the caret ^ negates the meaning of the following
+        RE.  This is similar to ! in a different context
+            [^b-d] matches any character EXCEPT those in the range of b-d
+
+        - combined sequence of chars match common word problems
+            [Yy][Ee][Ss] matches yes, Yes, YES, yEs, etc.....
+            [0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9][0-9] match any Social Security
+            Number
+
+    \
+        - backslash escapes a special character which means that char gets
+        interpreted literally and is therefore no longer special
+        - "\$" revers $ back to its original meaning since $ has special meaning
+        in the context of regex (end of line)
+
+    \<...\>
+        - escaped "angle brackets" <> mark work boundaries
+        - NOTE: this is supported in GNU grep but not all regex
+            - if this isn't working its likely that "\bword" will
+            - \b stands for word boundary
+        - PCRE (Perl Compatible Regular Expressions do not support it for example)
+        "\<the\>" matches the word "the" but not the words them, there, other...
+
+    ?
+        - matches zero or one of the previous RE
+        - generally used for matching single chars
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

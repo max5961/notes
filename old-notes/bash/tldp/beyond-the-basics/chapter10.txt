@@ -1,0 +1,203 @@
+Chapter 10 - Manipulating Variables
+https://tldp.org/LDP/abs/html/manipulatingvars.html
+-------------------------------------------------------------------------------
+### MANIPULATING STRINGS
+    - bash supports a number of string manipulation operations but these tools
+    lack a unified focus
+    - some are a subset of parameter substitution, while others fall under the
+    functionality of the UNIX expr command
+    - there is inconsistent command syntax and overlap of functionality
+    - for a list of string manipulation operations read through the linked
+    portion of this chapter
+
+    # STRING LENGTH
+        #!/bin/bash
+        declare -r my_string="hello world"
+        # all of the below output 11
+        echo ${#my_string}
+        echo `expr length $my_string`
+        echo `expr "$string" : '.*'`
+
+    # INSERTING A BLANK LINE BETWEEN PARAGRAPHS IN A TEXT FILE
+        #!/bin/bash
+        declare -ri MINLEN=60
+        # assume lines shorter than $MINLEN char ending in a period terminate
+        #+ a paragraph
+        while read line; do     # for as many lines as the input file has  ...
+            echo "$line"
+            declare -i len=${#line}
+            if [[ "$len" -lt "$MINLEN" && "$line" =~ [*{\.}]$ ]]; then
+                echo  # add a blank line immediately after a short line
+                      #+ terminated by a period.
+            fi
+        done
+        exit
+
+    # SUBSTRING EXTRACTION
+        ${string:position}
+
+        #!/bin/bash
+        declare -r my_string="hello world"
+        echo "${my_string:0}"    # hello world
+        echo "${my_string:1}"    # ello world
+        echo "${my_string:2:4}"  # llo
+        # index from the right end of the string (put negative indexes in () )
+        echo ${my_string:-4}     # defaults to full string ${parameter:-default}
+        echo ${my_string:(-4)}   # orld
+
+    # GENERATING AN 8-CHARACTER "RANDOM" STRING
+        #!/bin/bash
+        # rand-string.sh
+        if [ -n "$1" ]; then
+            declare str0="$1"  # set start-string to first arg if present
+        else
+            declare str0="$$"  # ELSE use the script PID as a start-string
+        fi
+        declare -i pos=2
+        declare -i len=8
+        declare -r str1=$( echo "$str0" | md5sum | md5sum )
+        # doubly scramble by piping into md5sum twice
+        declare -r randstring="${str1:$pos:$len}"
+        echo "$randstring"
+        exit $?
+
+### SUBSTR
+    #!/bin/bash
+    # expr substr $string $ position $length
+    # extracts $Length chars from $string starting at $position
+    declare -r stringZ=abcABC123ABCabc
+    echo `expr substr $stringZ 1 2` # ab
+    echo `expr substr $stringZ 4 3` # ABC
+
+### SUBSTRING REMOVAL
+    #!/bin/bash
+    # ${string#substring} deletes shortest match of $substring from $string
+    # ${string##substring} deletes longest match of $substring from $string
+    declare -r stringZ=abcABC123ABCabc
+    echo ${stringZ#a*C}
+    echo ${stringZ##a*C}
+
+see link for more examples of string manipulation
+https://tldp.org/LDP/abs/html/manipulatingvars.html
+
+### PARAMETER SUBSTITUTION
+${parameter}
+    - same as $parameter, but less ambiguous.  In certain contexts, only ${parameter}
+    works
+    - may be used for concatenating variables with strings
+    #!/bin/bash
+    your_id=${USER}-on-${HOSTNAME}
+    echo "$your_id" # echoes max-on-asus
+
+${parameter-default}, ${parameter:-default}
+    - if parameter not set, use default
+
+    ### ${parameter-default}
+    #!/bin/bash
+    var1=1
+    var2=2
+    # var3 is unset
+    echo ${var1-$var2} # 1
+    echo ${var3-$var2} # 2
+    #           ^ note the $prefix
+    # regarding the no prefix on the first var in the syntax.  If you were to
+    echo a variable using the ${var} syntax you don't add another $ inside of the
+    curly braces.  This syntax is saying, if the first parameter is not set, use
+    the second one, which starts after the -$
+
+    ### ${parameter:-default }
+    #!/bin/bash
+    username1=
+    echo "username1 has been declared, but is set to null."
+    echo "username1 = ${username1-`whoami`}"
+    # will not echo because username1 is null
+    username2=
+    echo "username2 has been declared, but is set to null."
+    echo "username2 = ${username2:-`whoami`}"
+    # will echo because of :- rather than just - in condition test
+    echo "username3 has not been declared"
+    echo "username3 = ${username3-`whoami`}"
+    # will echo using just the - in condition test, because the username3 is not
+    null, just undefined
+
+    - the default parameter construct finds use in providing "missing"
+    command-line arguments in scripts
+    #!/bin/bash
+    DEFAULT_FILENAME=generic.data
+    filename=${1:-$DEFAULT_FILENAME}
+    # if no command-line arg passed into the script, then the filename will
+    be DEFAULT_FILENAME
+
+    - other parameter-default options
+    - for all of the below, the : makes a difference only when the $parameter
+    has been declared and is null, as in the example above
+        ${parameter=default}, ${parameter:=default}
+            if the parameter is NOT set, set it to default
+        ${parameter+alt_value}, ${parameter:+alt_value}
+            if parameter IS set, use alt_value, else use null string
+        ${parameter?err_msg}, ${parameter:?err_msg}
+            - if parameter is set, use it, else, print err_msg and abort the script
+            with an exit status on 1
+            - you can replace err_msg with your own error message or empty to get
+            the same result as err_msg
+            - echo ${HOSTTTTTTNAME?you have commited a spelling erro brah}
+
+        #!/bin/bash
+        ${HOSTNAME?} ${USER?} ${HOME?} ${MAIL?}
+        echo "If you are reading this, critical environmental varriables"
+        echo "have been set"
+        echo "If you are not reading this, then an err_msg has been printed"
+        echo "because one of the above environmental variables have NOT been set"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

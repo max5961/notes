@@ -1,0 +1,57 @@
+-------------------------------------------------------------------------------
+SDDM
+-------------------------------------------------------------------------------
+sddm config files are located in '/etc/sddm.conf.d/'.  If no config file is
+present in that directory, create a default.conf file.
+The sddm theme files are located in: '/usr/share/sddm/themes/'
+
+
+-------------------------------------------------------------------------------
+MONITOR SETTINGS
+-------------------------------------------------------------------------------
+- arandr is a gui that creates an xrandr command that configures monitor
+  settings
+
+-------------------------------------------------------------------------------
+USEFUL COMMANDS
+-------------------------------------------------------------------------------
+pacman -Qii <package_name>
+    - list details of a package such as "Required By", "Depends On", "Optional
+      Deps", and more
+man <command>
+    - brings up manual page for <command>
+
+-------------------------------------------------------------------------------
+ASUS
+-------------------------------------------------------------------------------
+- change led keyboard
+    asusctl led-mode static -c <hex-code>
+- fan curves
+    - https://github.com/leonmaxx/asus_fanmode
+
+-------------------------------------------------------------------------------
+PACMAN
+-------------------------------------------------------------------------------
+downgrade a package:
+    look in /var/cache/pacman/pkg/ and find the version to download
+    sudo pacman -U <package.tar.gz>
+    Optional: in /etc/pacman.conf add the package to IgnorePkg:
+        IgnorePkg = ignoredPkg1, ignoredPkg2
+
+
+-------------------------------------------------------------------------------
+BOOT
+-------------------------------------------------------------------------------
+Fix disk:
+    sudo fsck <disk>
+
+See times for for each boot-up process to init
+    systemd-analyze blame
+
+
+
+
+
+
+
+

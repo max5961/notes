@@ -1,0 +1,242 @@
+-------------------------------------------------------------------------------
+REDUX
+-------------------------------------------------------------------------------
+https://www.youtube.com/watch?v=9boMnm5X9ak&list=PLC3y8-rFHvwheJHvseC3I0HuYI2f46oAK
+-------------------------------------------------------------------------------
+Redux is a state management library which acts as a predictable state container
+for JavaScript apps.
+
+Redux can be used with any UI library or framework such as React, Angular, Vue,
+and even just vanilla JavaScript.
+
+Redux stores and manages the state of all the individual components of an
+application.
+
+In Redux, all state transitions are explicit and it is possible to keep track of
+them
+
+While React and Redux are separate libraries, and it is possible to directly use
+Redux in your application, it is difficult.  Fortunately, there is an official
+React-Redux library which makes this process easier.
+
+
+THE THREE PRINCIPLES OF REDUX
+-------------------------------------------------------------------------------
+1. The state of your whole application is stored in an object tree within a
+single store.  In other words, we maintain our application state within a single
+object which would be managed by the Redux store
+
+2. The only way to change the state is to emit an ACTION, which is an object
+describing what happened.  You cannot directly update the state object.  An
+'action' in Redux might look like this, which is a lot like the useReducer hook:
+
+    { type: BUY_CAKE }
+
+3. To specify how the state tree is transformed by actions, you write PURE
+REDUCERS.  Pure reducers have the following function signature:
+
+    (prevState, action) => newState
+
+
+The JS App is SUBSCRIBED to the Redux Store
+
+REDUX STORE ----> JS APP ---> app dispatches ----> Action ----> Reducer <---|
+^                                                                           |
+|                                                                           |
+----------------------------------------------------------------------------
+
+
+REDUCERS
+-------------------------------------------------------------------------------
+Reducer functions specify HOW the application's state changes in RESPONSE to
+ACTIONS sent to the STORE.
+
+In terms of Redux, a reducer is a function that accepts STATE and ACTION as
+arguments and returns the next state of the application.
+
+    (prevState, action) => newState
+
+    type Store = {
+        numCakes: number;
+    };
+
+    type Action = {
+        type: "BUY_CAKE";
+        info: string;
+        [key: string]: any;
+    };
+
+    const initState: Store = {
+        numCakes: 5,
+    };
+
+    function buyCake(action: Action["type"]): Action {
+        return {
+            type: action,
+            info: "First redonk action",
+        };
+    }
+
+    function reducer(state: Store = initState, action: Action): Store {
+        switch (action.type) {
+            case "BUY_CAKE":
+                if (state.numCakes === 0) {
+                    console.log("We all out of cakes bro");
+                    return state;
+                }
+
+                return {
+                    ...state,
+                    numCakes: --state.numCakes,
+                };
+            default:
+                return state;
+        }
+    }
+
+REDUX STORE
+-------------------------------------------------------------------------------
+- One store for the entire application
+- Responsibilities:
+    - Holds application state
+    - Allows access to state via getState()
+    - Allows state to be updated via dispatch(action)
+    - Register listeners for changes via the subscribe(listener) method
+    - Handle unregister listeners by calling the function returned by
+      subscribe(listener)
+
+Here is an implementation of the Redux Store and involved combining multiple
+stores together:
+
+    import redux, { combineReducers, createStore } from "redux";
+
+    const initCakes = Object.freeze({
+        count: 10,
+    });
+
+    const initIceCreams = Object.freeze({
+        count: 20,
+    });
+
+    type Store = {
+        count: number;
+    };
+
+    type Action = {
+        type: "BUY_CAKE" | "BUY_ICECREAM";
+        [key: string]: string;
+    };
+
+    function cakeReducer(state: Store = initCakes, action: Action) {
+        const copy = { ...state };
+
+        if (action.type === "BUY_CAKE") {
+            copy.count = --state.count;
+        }
+
+        return copy;
+    }
+
+    function iceCreamReducer(state: Store = initIceCreams, action: Action) {
+        const copy = { ...state };
+
+        if (action.type === "BUY_ICECREAM") {
+            copy.count = --state.count;
+        }
+
+        return copy;
+    }
+
+    const rootReducer = combineReducers({
+        cake: cakeReducer,
+        iceCream: iceCreamReducer,
+    });
+
+    const store = createStore(rootReducer);
+
+    function logStore(prefix: string): void {
+        console.log(`${prefix} ${JSON.stringify(store.getState())}`);
+    }
+
+    logStore("Initial State:");
+
+    store.subscribe(() => {
+        logStore("Updated State:");
+    });
+
+    store.dispatch({ type: "BUY_CAKE" });
+    store.dispatch({ type: "BUY_ICECREAM" });
+
+    // Could also access the store properties individually
+    console.log(store.getState().cake.count);
+    console.log(store.getState().iceCream.count);
+
+
+REDUX MIDDLEWARE
+-------------------------------------------------------------------------------
+Middleware is the suggested way to extend Redux with customf unctionality.  It
+provides a third-party extension in the MIDDLE of dispatching and action, and
+that action reaching the reducer.
+
+Middleware is used for logging, crash reporting, performing async tasks, etc...
+
+We will use the ' redux-logger ' library for this tutorial:
+
+    npm install redux-logger
+    npm install --save-dev @types/redux-logger
+
+    import logger from "redux-logger";
+    import { applyMiddleware } from "redux";
+
+    const store = createStore(rootReducer, applyMiddleware(logger));
+
+    store.subscribe(() => {});
+
+    store.dispatch({ type: "BUY_CAKE" });
+    store.dispatch({ type: "BUY_ICECREAM" });
+
+
+LOGGER LOGS THE FOLLOWING:
+    action BUY_CAKE @ 13:59:13.026
+    prev state { cake: { count: 9 }, iceCream: { count: 20 } }
+    action     { type: 'BUY_CAKE' }
+    next state { cake: { count: 9 }, iceCream: { count: 20 } }
+    action BUY_ICECREAM @ 13:59:13.046
+    prev state { cake: { count: 9 }, iceCream: { count: 19 } }
+    action     { type: 'BUY_ICECREAM' }
+    next state { cake: { count: 9 }, iceCream: { count: 19 } }
+
+NOTE: logger is probably messing up the 'prev state' log because I mutated the
+prev state in the reducer function by doing --state.count.  Even though this
+works, should just do state.count - 1 so as to keep the previous state pure
+which could be useful for tasks besides just logging (such as history)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

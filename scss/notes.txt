@@ -1,0 +1,634 @@
+-------------------------------------------------------------------------------
+SASS / SCSS GUIDE
+-------------------------------------------------------------------------------
+https://sass-lang.com/guide/
+-------------------------------------------------------------------------------
+
+COMMENTS
+-------------------------------------------------------------------------------
+Sass allows you to use both // and /* */ to write comments, whereas CSS only
+allows the use of /* */
+
+
+VARIABLES
+-------------------------------------------------------------------------------
+To declare variables in sass, prefix them with $ and then use $ to call the
+variables.  Variables can be assigned other variables.
+
+    $primary-color: #333;
+    $secondary-color: darken($primary-color, 10%);
+
+When the Sass code is processed, it replaces every instance of every variable
+with normal CSS.
+
+Sass variables are compiled away by Sass but, if you use CSS variables in your
+Sass code, they are not compiled and are included in the CSS output.
+
+Sass variables are 'imperative'.  The value of a variable is mutable and earlier
+uses of a variable are unaffected by mutating that variable later in the script.
+This is in contrast to CSS variables which are still mutable, but modifying a
+css variable modifies all of its uses.
+
+Sass variables can also have global or local scope.  Declaring a variable within
+a block does not modify a variable of the same name that has global scope.  This
+is what is known as shadowing and helps to ensure that a local variable doesn't
+accidently change the value of a global variable.  If a local variable intends
+on modifying a global variable, the !global flag can be used.
+
+The above is in contrast to many programming paradigms where you can modify
+global variables from within an inner scope, but if you declare a variable of
+the same name as some outer scope variable, that variable is separate.  In Sass
+because you cannot really interact with variables in the same way you would in a
+conventional programming lanuguage, variables are only mutable in the sense that
+they can be redeclared any amount of times with any value.
+
+    #app {
+        --border-color: red;
+
+        $bg-color: #000;
+
+        // div .one is black with a green border
+        .one {
+            height: 10rem;
+            width: 10rem;
+            background-color: $bg-color;
+            border: 0.4rem solid var(--border-color);
+        }
+
+        $bg-color: yellow;
+
+        --border-color: green;
+
+        // div .two is yellow with a green border
+        .two {
+            height: 10rem;
+            width: 10rem;
+            border: 0.4rem solid var(--border-color);
+            background-color: $bg-color;
+        }
+    }
+
+    .three {
+        height: 10rem;
+        width: 10rem;
+        /* this throws an error because variables are only visible within
+           their scope */
+        // background-color: $bg-color;
+    }
+
+
+    EXAMPLE USING THE !GLOBAL FLAG
+    $bg-color: orange;
+
+    #app {
+        $bg-color: #000 !global;
+    }
+
+    .three {
+        height: 10rem;
+        width: 10rem;
+        background-color: $bg-color; // bg is #000
+    }
+
+
+NESTING
+-------------------------------------------------------------------------------
+Sass allows you to nest CSS selectors in a way the follows the visual hierarchy
+of HTML.
+
+    ------------------------------
+    SASS:
+    ------------------------------
+    nav {
+        ul {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+    }
+
+    ------------------------------
+    CSS:
+    ------------------------------
+    nav ul {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+Of course, this can lead to heavily nested and therefore specific css selectors,
+which can lead to problems with both readability and specifity.  Regarding
+specificity, this becomes a concern especially when applying media queries, as
+the media query must have at least same specificity as the original declaration.
+
+The recommended maximum depth of nesting is around 3 levels deep.
+
+
+PARENT SELECTOR &
+-------------------------------------------------------------------------------
+The ampersand (&) references the parent selector from within a nested ruleset.
+It acts as an alias for the parent selector, replacing the & with its selector
+from its direct parent block.
+
+For example:
+
+    ------------------------------
+    SASS
+    ------------------------------
+    .box {
+        background-color: #000;
+
+        &.active {
+            background-color: #fff;
+        }
+    }
+    ------------------------------
+    CSS
+    ------------------------------
+    .box {
+        background-color: #000;
+    }
+
+    .box.active {
+        background-color: #fff;
+    }
+
+This is very useful when handling psuedo elements:
+
+    button.my-button {
+        &:hover {
+            background-color: #000;
+        }
+
+        &:active {
+            background-color: #333;
+        }
+    }
+
+
+MAPS
+-------------------------------------------------------------------------------
+Uses the built in function map-get($var-name, key)
+
+    $green: (
+        "light": lightgreen,
+        "medium": green,
+        "dark": darkgreen,
+    );
+
+    .one {
+        height: 10rem;
+        width: 10rem;
+        background-color: map-get($green, "dark");
+    }
+
+
+FUNCTIONS
+-------------------------------------------------------------------------------
+Functions are defined with the @function at-rule and contain an @return at-rule.
+In the example below, a function is used to further simplify the map-get example
+from above.
+
+    $green: (
+        "light": lightgreen,
+        "medium": green,
+        "dark": darkgreen,
+    );
+
+    @function green($weight-name) {
+        @return map-get($green, $weight-name);
+    }
+
+    .one {
+        height: 10rem;
+        width: 10rem;
+        // background-color: map-get($green, "dark");
+        background-color: green("light");
+
+
+MIXINS
+-------------------------------------------------------------------------------
+Mixins allow you to reuse groups of declarations.  They use the @mixin rule to
+define the mixin, and the @include rule to use it.  It also has the option of
+including parameters.  While mixins can include parameters, the distinction
+between a mixin and function is that a mixin should not return values.  That
+should be the job of a function.  Mixins are there to define styles, and are
+similar to void functions in that their responsibility is to execute a group of
+statements (declarations), not to return a specific value.
+
+    @mixin flexCenter($direction) {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: $direction;
+    }
+
+    @mixin maxDim {
+        height: 100vh;
+        width: 100vw;
+    }
+
+    #app {
+        @include maxDim;
+
+        // Note how the argument here is passed without quotes
+        // passing it with quotes would be the same as:
+        //   flex-direction: "column";
+        @include flexCenter(column);
+        gap: 5px;
+
+        & > * {
+            height: 100px;
+            width: 100px;
+            background-color: green;
+        }
+    }
+
+
+DEFAULT PARAMETERS
+-------------------------------------------------------------------------------
+In mixins and functions you can define default parameters by postfixing their
+identifiers by : value,
+
+    @mixin darkMode($dark: true) {
+        @if $dark {
+            background-color: #000019;
+        } @else {
+            background-color: #d4ffff;
+        }
+    }
+
+In this example, true is the default value for the $dark parameter.
+
+
+@IF @ELSE IF @ELSE
+-------------------------------------------------------------------------------
+@if @else if @else
+
+    @mixin darkMode($dark: true) {
+        @if $dark {
+            background-color: #000019;
+        } @else {
+            background-color: #d4ffff;
+        }
+    }
+
+    #app {
+        // @include darkMode($dark: true); // valid
+        // @include darkMode(true); // also valid
+        @include darkMode(); // also valid because true is the default arg
+        // @include darkMode; // also valid
+
+        gap: 1rem;
+
+        & > * {
+            height: 100px;
+            width: 100px;
+            background-color: lightgreen;
+        }
+    }
+
+In Sass, only the values false and null are falsey.  However, empty strings, empty
+lists, and even the number 0 are all truthy in Sass.
+
+
+MIXINS AND MEDIA QUERIES
+-------------------------------------------------------------------------------
+Implementing this makes use of the @content at-rule.  @content simply represents
+whatever is passed into the body of the mixin upon its use.
+
+    @mixin flexCenter($direction) {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: $direction;
+    }
+
+    @mixin maxDim {
+        height: 100vh;
+        width: 100vw;
+    }
+
+    @mixin mw-800px {
+        @media (min-width: 800px) {
+            @content;
+        }
+    }
+
+    #app {
+        @include maxDim;
+        @include flexCenter(column);
+
+        @include mw-800px {
+            flex-direction: row;
+        }
+
+        gap: 1rem;
+
+        & > * {
+            height: 100px;
+            width: 100px;
+            background-color: lightgreen;
+            @include mw-800px {
+                background-color: lightblue;
+            }
+        }
+    }
+
+Note how a separate instance of the mw-800px mixin was needed for each block.
+This is probably the most practical and readable approach and it would lead to
+less specificity issues....but you could also apply the media mixin to the
+bottom of the block and be able to nest everything under one call to the mixin.
+(*needs testing to make sure this is true)
+
+    #app {
+        @include maxDim;
+        @include flexCenter(column);
+
+        gap: 1rem;
+
+        & > * {
+            height: 100px;
+            width: 100px;
+            background-color: lightgreen;
+            // @include mw-800px {
+            //     background-color: lightblue;
+            // }
+        }
+
+        @include mw-800px {
+            flex-direction: row;
+
+            & > * {
+                background-color: lightblue;
+            }
+        }
+
+    }
+
+
+@EXTEND
+-------------------------------------------------------------------------------
+The @extend at rule allows you to inherit the declarations of another class.
+You can of course override some of the declarations which were inherited.  You
+can also add whatever styles you want to the selector which is using the
+@extend.
+
+    @use "./reset.css";
+    @use "./colors";
+
+    @mixin initDiv {
+        width: 10rem;
+        height: 10rem;
+        background-color: colors.$purple;
+    }
+
+    @mixin flexCenter {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+    }
+
+    #app {
+        @include flexCenter;
+
+        height: 100vh;
+        width: 100vw;
+        background-color: colors.$green;
+
+        .one {
+            @include initDiv;
+        }
+
+        .two {
+            @extend .one;
+            background-color: colors.$blue;
+        }
+    }
+
+
+CALCULATIONS
+-------------------------------------------------------------------------------
+In Sass, you can perform calculations without the calc() function which is
+necessary in plain CSS.  This example is used inside of a mixin declaration, but
+you could perform a calculation anywhere.
+
+    @mixin initDiv {
+        width: 80% - 40%;
+        // width: calc(80% - 40%); // same as the above
+        height: 10rem;
+        background-color: colors.$purple;
+    }
+
+In Sass units must be of the same type to perform calculations without the calc
+function, whereas with the calc() function units can be of any type.  For
+example:
+
+    width: 25% - 5rem;  // this throws an error
+
+    width: calc(25% - 5rem); // this is okay
+
+
+PARTIALS
+-------------------------------------------------------------------------------
+Partials are simply a scss file named with a leading underscore.  Partials
+should be used for every Sass file except for your files which you want to
+explicitly compile which is commonly going to be a single index.scss (but could
+of course be multiple stylesheets).
+
+Partials do NOT generate css files on compilation.  This is extremely important.
+For example if you did not use partials in your imports, then you could possibly
+end up with duplicate CSS in your final output.  The sass preprocessor does not
+check for duplicate imports so if a file is imported in two locations the
+compiled code will contain duplicates of that file.  This is more relevant to
+files which may be pure variable definitions but could still be relevant to
+normal files.
+
+- Partials can be imported with @use, @forward, and @import (deprecated).
+- Partials are also useful for creating libraries to be used by other modules.
+- Partials can be imported in without their leading underscore or file ext.
+
+    "_partial.scss"
+
+    @use "./partial"
+
+
+@USE
+-------------------------------------------------------------------------------
+The @use SASS rule loads mixins, functions, and variables, from other Sass
+stylesheets and combines multiple stylesheets together.  Stylesheets loaded by
+@use are called 'modules'.  Sass also provides built in modules for useful
+functions.
+
+The @use rule must come before any other rules, including style rules.  @forward
+is the only statement allowed before @use.
+
+The @use rule imports stylesheets in the order of the @use statements, so a CSS
+reset can be imported into an index.scss file before the other stylesheets.
+
+There are a few different ways to use the variables in a Sass module.
+
+    @use "./module-1";
+
+    .one {
+        height: 10rem;
+        width: 10rem;
+        background-color: module-1.$color1;
+    }
+
+-------------------------------------------------------------------------------
+    @use "./module-1" as *;
+
+    .one {
+        height: 10rem;
+        width: 10rem;
+        background-color: $color1; // $color1 is part of module-1
+    }
+
+-------------------------------------------------------------------------------
+
+    @use "./module-1" as moduleName;
+
+    .one {
+        height: 10rem;
+        width: 10rem;
+        background-color: moduleName.$color1;
+    }
+
+To declare private members of a module, prefix a variable with either - or _ and
+then these members will work just like normal within that module, but will be
+inaccessible to stylesheets that load your module.
+
+
+@FORWARD
+-------------------------------------------------------------------------------
+The @forward rule is useful for organizing libraries across many files by
+funneling them into a single entry point.  This isn't necessarily any more
+useful than simply importing a single library with @use into the file you want
+to use the library with.  @forward is helpful for handling multiple libraries by
+putting them into a "toolbox" of sorts which can then be used with @use in any
+file.
+
+You cannot use @use to create a "toolbox" because @use cannot extend its import
+beyond its current file.
+
+    _lib1 --@use--> _toolbox --@use--> _component.scss
+        lib1 does NOT exist in _component
+
+    _lib1 --@forward--> _toolbox --@use--> _component.scss
+        lib1 DOES exist in _component
+
+@use is needed to use the bundled libraries created with @forward.  @forward by
+itself does not allow you to "use" whatever library it imports.  Only @use (or
+the deprecated @import) can "use" the features of a library, hence why it is
+called @use.
+
+Note: everything is a partial in this example except for the final output file
+index.scss
+
+    -----------------------------------
+    _my-lib-1.scss
+    -----------------------------------
+    @mixin listReset {
+        margin: 0;
+        padding: 0;
+    }
+
+    $bg-color: #fff;
+
+    -----------------------------------
+    _my-lib-2.scss
+    -----------------------------------
+    @mixin flexCenter {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    -----------------------------------
+    _toolbox.scss
+    -----------------------------------
+    @forward "./my-lib-1";
+    @forward "./my-lib-2";
+
+    -----------------------------------
+    _my-component.scss
+    -----------------------------------
+    @use "./toolbox" as *;
+
+    div {
+        background-color: $bg-color;
+    }
+
+    // ... rest of Sass code
+
+    -----------------------------------
+    index.scss
+    -----------------------------------
+    @use "./my-component";
+
+    // this is the final compiled file
+
+
+ADDING A PREFIX (NAMESPACE) WITH @FORWARD
+
+    -----------------------------------
+    _toolbox.scss
+    -----------------------------------
+    @forward "./my-lib-1" as namespace1-*;
+    @forward "./my-lib-2" as namespace2-*;
+
+    -----------------------------------
+    _my-component.scss
+    -----------------------------------
+    @use "./toolbox" as *;
+
+    div {
+        @include namespace1-myMixin;
+        color: namespace2-$myColor;
+    }
+
+    // ... rest of Sass code
+
+
+CONTROLLING VISIBILITY WITH @FORWARD
+
+    -----------------------------------
+    _toolbox.scss
+    -----------------------------------
+    @forward "./my-lib-1" hide myMixin, myOtherMixin;
+
+
+CONFIGURING MODULES WITH @FORWARD (AND @USE)
+    -----------------------------------
+    _toolbox.scss
+    -----------------------------------
+    @forward "./my-lib-1" with (
+        $black: #222 !default,
+        $border-radius: 0.1rem
+    );
+
+    The !default changes the defaults of an upstream stylesheet while still
+    allowing downstream stylesheets to override them.
+
+    @use can do the same thing as @forward, but cannot use the !default flag.
+    -----------------------------------
+    _toolbox.scss
+    -----------------------------------
+    @use "./my-lib-1" with (
+        $black: #222,
+        $border-radius: 0.1rem
+    );
+
+
+
+
+
+
+
+
+
+
+
+

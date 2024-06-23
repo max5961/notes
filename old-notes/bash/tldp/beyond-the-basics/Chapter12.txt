@@ -1,0 +1,43 @@
+Chapter 12 - Command Substitution
+https://tldp.org/LDP/abs/html/commandsub.html
+-------------------------------------------------------------------------------
+- Command substitution reassigns the output of a command or even multiple commands
+- It plugs the command output into another context
+- The classic form of command substitution uses backquotes
+
+    # both of the below have the same result
+    testfile_listings=`ls *.txt`
+    textfile_listings=$(ls *.txt)
+
+- Command substitution invokes a subshell
+- Command substitution may result in word splitting
+
+    #!/bin/bash
+
+    # note that for the below examples, echo with the -n flag omits the trailing
+    # \n char from the end of the echo.  Therefore the assigned variables will
+    # not include the newlines, which is cleaner than having the variable assigned
+    # with a bunch of pesky newlines!
+
+    # without the echo statement in the for loop, this would not work!
+    variable1=`for i in 1 2 3 4 5; do
+        echo -n "$i"
+    done`
+    echo "variable1 = $variable1" # variable1 = 12345
+
+    i=0
+    variable2=`while (( i < 10 )); do
+        echo -n "$i"
+        (( i++ ))
+    done`
+    echo "variable2 = $variable2" # variable2 = 012345678910
+
+    # the above can also be written with the more modern syntax $()
+    i=0
+    variable3=$(while (( i < 5 )); do
+        echo -n "$i"
+        (( i++ ))
+    done)
+    echo "variable3 = $variable3" # variable3 = 12345
+
+

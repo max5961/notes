@@ -1,0 +1,14 @@
+-------------------------------------------------------------------------------
+LESS
+-------------------------------------------------------------------------------
+The less command opens a file in the terminal and allows you to scroll through
+it.  It uses vi like keybinds.  In order to navigate a less page quicker:
+    spacebar: advance one page forward
+    b: one page backward
+    /: to search
+
+-------------------------------------------------------------------------------
+GREP
+-------------------------------------------------------------------------------
+The -P flag tells grep to use Perl based regular expressions
+

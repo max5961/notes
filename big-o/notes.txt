@@ -1,0 +1,4 @@
+SPACE COMPLEXITY
+-------------------------------------------------------------------------------
+Space complexity measures the total amount of memory that an aglorithm uses
+relative to the input size.

@@ -1,0 +1,2000 @@
+-------------------------------------------------------------------------------
+HIGHER ORDER FUNCTIONS / CALLBACK FUNCTIONS / RETURNED FUNCTIONS
+-------------------------------------------------------------------------------
+A higher order function is one which accepts:
+
+    a function as an argument
+
+            AND/OR
+
+    returns a function as an argument
+
+You could consider a higher order function a 'parent function' to a callback
+function, but the term higher order function is a standard and widely understood
+terminology to mean the above definition.
+
+
+RETURNED FUNCTIONS:
+-------------------------------------------------------------------------------
+This is fairly self explanatory.  If the returned function is returned into the
+RHS of an assignment, then the identifier on the LHS is assigned the returned
+function.  This can be, but does not need to be an anonymous function.  Either
+way, the name doesn't matter because it should be assigned a name when it is
+returned into an assignment.  Since functions are just objects, the name a
+returned function is assigned doesn't matter.  The name is just another pointer
+to that function.
+
+
+CALLBACK FUNCTIONS
+-------------------------------------------------------------------------------
+When a function accepts another function as an argument, the argument being
+passed in is what is called a CALLBACK FUNCTION.  When a higher order function
+is defined and it names its parameters, it names callback functions by their
+name only, not adding parentheses or including the function signature.  When the
+higher order function is called, the callback function is passed in without
+parentheses as well. When a callback function (not the higher order function it
+is used in) is defined however, it is of course defined with parentheses and any
+parameters it is designed to have.
+
+The reason we pass in a callback without any parentheses (identifier only) is
+because we are not calling the function, we are passing the function itself as
+an argument.  If we did attempt to pass a callback function as an argument with
+parentheses, the function would be pushed to the call stack and executed before
+the execution of the higher order function.  Thus, the higher order function
+would be called with the return value (or lackthereof) of the callback.  This is
+not what we want.  We want the actual function to be passed as an argument, NOT
+its evaluation.  By passing the function identifier only, the body of the higher
+order function can utilize the callback in its function body.
+
+An important concept to make note of is that while a callback function SHOULD
+fit the prototype of the function expected by the higher order function, it is
+perfectly legal in plain JS for the signatures to not match, even if it would
+lead to undefined behavior and possibly runtime errors. (When I refer to the
+function signature, I mean in the C-languages sense of creating a function
+prototype)
+
+    function cbFunc(x, y) {
+        return x + y;
+    }
+    function higherOrderFunc(cbFunc) {
+        // okay
+        console.log(cbFunc(5, 10));
+
+        // would log NaN
+        // console.log(cbFunc(5));
+    }
+    higherOrderFunc(cbFunc) // 15
+
+-------------------------------------------------------------------------------
+
+    // Functional, yet bad practice.  No errors thrown.
+    function cbFunc(x) {
+        return x;
+    }
+    function higherOrderFunc(cb) {
+        console.log(cb(5, 10));
+    }
+    higherOrderFunc(cbFunc) // 5
+
+To add to this and give a specific example:  It is possible to create a callback
+which is passed as an argument to the addEventListener method that is defined
+with multiple parameters.  Normally, the only parameter you would define an
+addEventListener handler with is the first parameter which represents the Event
+object and it is of course impractical and wrong to do it otherwise.  When the
+Event occurs that triggers the handler, the handler would be called with only
+the Event object passed as an argument.  This is because the JavaScript Engine
+only knows the variables that are within the scope of where the handler is
+called.
+
+Given that it's extremely common to need to pass more variables into a callback
+function than it is designed by the higher order function to have, you have a
+couple core options:
+
+    - you can wrap the callback in a wrapper function and utilize the available
+      scope to give the callback access to the values of runtime variables.
+      Then pass that callback which utilizes outer scope as an argument to some
+      higher order function.
+
+            const x = 10;
+            function cbFunc() {
+                return x;
+            }
+            function higherorderfunc(cbFunc) {
+                console.log(cbFunc());
+            }
+            higherorderfunc(cbFunc)
+
+    - JS allows to define a function within the ARGUMENTS list of a higher order
+      function when the function is called.  This is an anonymous function or in
+      other words a nameless function (usually in arrow function syntax for
+      readability).  By passing an anonymous function as an argument you are
+      doing fundamentally the same thing as passing a pre-defined named
+      function, but there are added benefits.  You can access available scope
+      just as you would with a wrapper function and thus not need to define the
+      function with extra parameters.  Given that the wrapper function is
+      anonymous, you don't need to muddy up your code with added redundant
+      someFunctionWrapper(){...} definitions. And lastly, passing an anonymous
+      function as an argument when a higher order function is called can make
+      your code more readable (less jumping around to figure out the full
+      intention of the higher order function)
+
+            const x = 10;
+            function higherorderfunc(cb) {
+                console.log(cb());
+            }
+            higherorderfunc(() => {
+                return x;
+            })
+
+
+Especially as you start to work with Promises and more complex callbacks which
+often make heavy use of anonymous functions, its extremely easy to get mixed up
+with where functions should be placed or when they are called when trying to
+trace execution.  It is also easy to fall into the habit of following patterns
+without actually thinking about what is going on.  Here is a simple analogy to
+clarify.
+
+    DECLARING a higher order function is to ->
+        - an identifier REPRESENTING a function in the PARAMETER list
+        - calling an identifier that REPRESENTS a function within the function
+          body
+
+                    AS
+
+    CALLING a higher order function is to ->
+        - an anonymous function DECLARATION in the ARGUMENT list
+                        OR
+        - a PRE-DECLARED function's identifier in the ARGUMENT list
+
+This is an example using an IIFE which demonstrates the above distinctions:
+
+    ((cb) => {
+        cb()
+    })(() => {
+        console.log("Hello World");
+    })
+    // logs: Hello World
+
+1. declare anonymous function which declares a single parameter.  That parameter
+is a callback function which is called within the function body.
+2. Immediately invoke the anonymous function expression and pass in an anonymous
+function as an argument.  That anonymous function does one thing, which is to
+print Hello World
+
+
+ANONYMOUS FUNCTIONS AND CALLBACKS / RETURNING ANONYMOUS FUNCTIONS
+-------------------------------------------------------------------------------
+Javascript allows you to define anonymous functions within function parameters,
+and to return anonymous functions from higher order functions.  In both of these
+cases, the names of the functions are unimportant.
+
+In the case of a callback function, the higher order function which accepts the
+callback has already defined its own name for the callback in its function
+definition.
+
+In the case of returning a function, the function will be assigned a name if it
+is returned into the RHS of an assignment.  If the function call is not part of
+an assignment, then the function declaration declaration is not assigned to
+anything and that instance of the function is thus garbage collected.
+
+Anonymous functions also allow you to create Immediately Invoked Function
+Expressions (IIFE's).
+
+    ((str) => {
+        console.log(str);
+    })("brah"); // brah
+
+
+HIGHER ORDER FUNCTIONS EXAMPLES:
+-------------------------------------------------------------------------------
+
+FUNCTION WHICH RETURNS ANOTHER FUNCTION EXAMPLE:
+
+    function createGreeting(greeting) {
+        return function(name) {
+            return `${greeting}, ${name}.`
+        }
+    }
+
+    const sayHello = createGreeting("Hello");
+    const greeting = sayHello("Brah");
+    console.log(greeting); // Hello Brah
+
+The above could also be written like this with arrow function syntax:
+
+    const createGreeting = (greeting) => (name) => `${greeting} ${name}`;
+
+    const sayHello = createGreeting("Hello");
+    const greeting = sayHello("Brah");
+    console.log(greeting); // Hello Brah
+
+
+FUNCTIONS WHICH ACCEPTS A CALLBACK FUNCTION AS AN ARGUMENT:
+
+    class CustomArrPrototype {
+        constructor(arr) {
+            this.arr = arr;
+        }
+
+        forEach(cb) {
+            for (let i = 0; i < this.arr.length; i++) {
+                cb(this.arr[i]);
+            }
+        }
+
+        filter(cb) {
+            const filtered = [];
+            for (let i = 0; i < this.arr.length; i++) {
+                if (cb(this.arr[i])) {
+                    filtered.push(this.arr[i]);
+                }
+            }
+            return filtered;
+        }
+
+        map(cb) {
+            const mapped = [];
+            for (let i = 0; i < this.arr.length; i++) {
+                mapped.push(cb(this.arr[i]));
+            }
+            return mapped;
+        }
+    }
+
+    function forEachCB(num) {
+        console.log(num);
+    }
+
+    function filterCB(num) {
+        return num % 2 === 0;
+    }
+
+    function mapCB(num) {
+        return num * 2;
+    }
+
+    const customArray = new CustomArrPrototype([1, 2, 3, 4, 5]);
+
+    // not anonymous
+    customArray.forEach(forEachCB);
+    console.log(customArray.filter(filterCB));
+    console.log(customArray.map(mapCB));
+
+    // anonymous functions
+    console.log(customArray.filter((num) => num <= 4));
+    console.log(customArray.map((num) => num * 10));
+
+
+-------------------------------------------------------------------------------
+ASYNCHRONOUS CODE
+-------------------------------------------------------------------------------
+Here is an example of a function called loadScript which as it stands right here
+is perfectly valid and may be all you need.
+
+    function loadScript(src) {
+        const script = document.createElement("script");
+        script.src = src;
+        document.head.append(script);
+    }
+
+    loadScript("./script2.js")
+
+However, loading an external script into the browser is often used to improve
+loading times by not loading large scripts until they are needed.  Once the
+script is needed, then we would typically want to utilize it right away.
+However, the fact that we want to utilize the script right away is a problem
+with our current implementation.
+
+Our current code can't achieve that goal for a couple of core reasons:
+
+    The first reason is that fundamentally, it just won't work because the
+    external script we want to load in is encapsulated in a separate module and
+    our base script has no way of accessing it.
+
+    The second reason, and the reason most relevant to the topic of callbacks
+    and asynchronous code is that the operation of opening and reading a file
+    and then loading it into the browser takes much more time than executing the
+    code in our current loadScript function.  Because of this time discrepancy,
+    the engine runs the process of loading the external script asynchronously
+    (behind the scenes). Even if we could access the code from the external
+    script, we wouldn't be able to use it until the script was loaded.
+
+The solution to this is to tell our newly created HTMLScriptElement to wait for
+a 'load' event at which point we will tell our code 'do something'.  The phrase
+'do something' is integral to the nature of callback functions.  When we add an
+eventListener to our script element that tells it to wait for it to load, it
+would be pretty infuriating if JavaScript said "Hey I created 3 options for you
+to choose from when this script loads, pass in 1, 2, or 3 as an argument to
+choose from one of the 3 options".  Instead, we can assign a callback function
+to the HTMLScriptElement's 'onload' property which is ran when the engine fires
+a 'load' event.  The callback is function we assign to the onload property is
+often called a handler, since it "handles" what happens when the event that
+triggers the callback occurs.
+
+    function loadScript(src) {
+        const script = document.createElement("script");
+        script.src = src;
+        script.onload = handleOnLoad;
+        document.head.append(script);
+    }
+
+    loadScript("./script2.js")
+
+We could have done the same thing with the the above example where we assign a
+callback function to our following syntax:
+
+    script.addEventListener("load", handleOnLoad);
+
+Its important to note that script.onload is not an HTMLScriptElement method, but
+a property which is of type: (e: Event) => void;  It is triggered when the load
+Event is fired.  The onload property is more formally referred to as an 'event
+handler'.
+
+The base script doesn't actually have access to the callback function we
+assigned to onload, but it tells the engine to run the function with that
+identifier when the external script loads and by that time, given that the
+engine will have loaded the function associated with the event handler it will
+be able to call the function.  By itself, this would indeed cause a compile time
+error in TypeScript because it can't gaurantee the existence of the function at
+compile time, but there are ways of telling TypeScript that the function is
+defined in a separate module to prevent it from throwing a compilation error)
+
+The above example could be practical for some situations, but often times,
+scripts may be loaded sequentially but not at the same time (lazy loading). To
+achieve this, we would need to chain callbacks together.  x callback calls y
+callback which calls z callback and so on.  This is what is referred to as
+'callback hell', which is basically when callback a calls callback b which calls
+callback c and so on.. Here are a couple different examples:
+
+-------------------------------------------------------------------------------
+
+    function logNumber(nums, index, handleTimeoutCompletion) {
+        setTimeout(() => {
+            console.log(nums[index]);
+            if (nums[index + 1]) {
+                handleTimeoutCompletion();
+            }
+        }, 250);
+    }
+
+    function simulateLL(numArray) {
+        logNumber(numArray, 0, () => {
+            logNumber(numArray, 1, () => {
+                logNumber(numArray, 2, () => {
+                    logNumber(numArray, 3, () => {
+                        logNumber(numArray, 4, () => {
+                            console.log("Finished");
+                        })
+                    })
+                })
+            })
+        })
+    }
+
+    function simulateLLRecursive(numArray) {
+        if (numArray.length === 0) {
+            console.log("Finished");
+        }
+        index = 0;
+        logNumber(numArray, index, () => {
+            simulateLLRecursive(numArray.slice(1));
+        })
+    }
+
+    // simulateLL([1, 2, 3, 4, 5])
+    simulateLLRecursive([1, 2, 3, 4, 5, 6, 7])
+
+-------------------------------------------------------------------------------
+
+    function lazyLoadScripts(srcArray) {
+        const script = document.createElement("script")
+        script.src = srcArray[0];
+        document.head.appendChild(script);
+        script.onload(() => {
+            alert("Script 1 is loaded");
+            const script = document.createElement("script");
+            script.src = srcArray[1];
+            document.head.appendChild(script);
+            script.onload = () => {
+                const script = document.createElement("script");
+                script.src = srcArray[2];
+                document.head.appendChild(script);
+                script.onload = () => {
+                    const script = document.createElement("script");
+                    script.src = srcArray[3];
+                    document.head.appendChild(script);
+                    script.onload = () => {
+                        alert("All scripts have loaded");
+                    })
+                })
+            })
+        })
+    }
+
+-------------------------------------------------------------------------------
+
+The above example gets even worse if we want to handle errors (like if we
+accidentally pass an invalid src path/to/file which would throw an error).  The
+below example could be written with recursion to make it less nested, but the
+same principles would apply.  Another way to handle this to make it less nested,
+would be to define the callback functions outside the parameter list for the
+higher order functions which accepts the callback.  You could apply recursion
+here as well and only need to create one function which calls a shortened array
+of src paths, or you could not apply recursion and you would need to define a
+separate function for every step of the tree.  Either way is messy and not the
+easiest to follow.
+
+This example is written to be an example of 'callback hell'. While this is
+difficult to read, it is a good practice exercise to trace the its execution to
+let the concepts sink in.
+
+    function loadScript(src, handleResult) {
+        const script = document.createElement("script");
+        script.src = src;
+
+        // define anonymous callback function which is a wrapper
+        // for the handleResult function.  The handleResult function
+        // will be called in one of two possible signatures.
+        script.onload = () => {
+            handleResult(null, script.src);
+        }
+        script.onerror = () => {
+            handleResult(new Error("Scipt load error"), script.src);
+        }
+        document.head.append(script);
+    }
+
+    function handleError(error, src) {
+        console.error(`Error loading script: ${src}, Error: ${error.message}`);
+    }
+
+    function printSuccessMessage(src) {
+        console.log(`Script ${src} loaded successfully`);
+    }
+
+    // The key here is to remember that the anonymous callback function we
+    // define as a parameter will be executed when the script loads or has an
+    // error
+    //
+    // Depending on the outcome, the handlers when define in the argument list
+    // will be called as:
+    //     handler(null, "./path/to/script.js");
+    //                OR
+    //     handler(errorObject, "./path/to/script.js");
+
+    function lazyLoadScripts(srcArray) {
+        loadScript(srcArray[0], (error, src) => {
+            if (error) {
+                handleError(error, src);
+            } else {
+                printSuccessMessage(src);
+                loadScript(srcArray[1], (error, src) => {
+                    if (error) {
+                        handleError(error, src);
+                    } else {
+                        printSuccessMessage(src);
+                        loadScript(srcArray[2], (error, src) => {
+                            if (error) {
+                                handleError(error, src);
+                            } else {
+                                printSuccessMessage(src);
+                                console.log("All scripts loaded successfully");
+                            }
+                        })
+                    }
+                })
+            }
+        })
+    }
+
+
+HANDLERS VS CALLBACKS
+-------------------------------------------------------------------------------
+All handlers are callbacks, but not all callbacks are handlers.  Handlers are
+commonly used to describe a callback which is executed when some event is
+triggered.  In that way, the handler "handles" what should happen when some
+event is triggered.  While callbacks are often used in asynchronous code, their
+purpose isn't restricted to handling the post Event tasks.  Callbacks can be
+used synchronously as well.  For example, in Promise objects, an "executor"
+callback is used to instantiate the Promise, but that callback runs
+synchronously.  The executor's function signature however accepts up to two
+handlers which are executed on the eventual fulfillment or rejection of the
+Promise.
+
+
+-------------------------------------------------------------------------------
+PROMISES
+-------------------------------------------------------------------------------
+A Promise is simply an object which keeps track of the state of a task.  Its
+constructor accepts a single argument which is a callback function.  The
+callback function used in its constructor is referred to as the 'executor'
+callback.  The executor callback is user defined and takes in up to two
+arguments representing handlers which are not user defined.  The callback
+handlers passed into the executor callback are provided by the JavaScript
+Runtime.
+
+
+PROMISES STATE
+-------------------------------------------------------------------------------
+A Promise is always in one of three possible states (capitalization for notes
+clarity only)
+
+    PENDING
+    FULFILLED
+    REJECTED
+
+A Promise always starts out in a PENDING state.  Once the Promise is 'resolved'
+or 'rejected', the state turns to FULFILLED or REJECTED respectively.  The state
+is mutable when it is PENDING, but once it is no longer pending, the state
+becomes immutable.
+
+
+EXECUTOR CALLBACK
+-------------------------------------------------------------------------------
+The executor callback consists of two parameters which are also callback
+functions called the 'resolve' and 'reject' callbacks.  The function definitions
+of the resolve and reject callbacks are not defined by the programmer.  Instead,
+you can think of them as private methods of the Promise object, but they are
+technically provided by the JavaScript Runtime.  The programmer is responsible
+for declaring on which conditions these resolve and reject callbacks will be
+called (or not called).  Given that the executor is passed directly into the
+constructor, the Promise object is initialized right away with the conditions
+(or lackthereof) to make the Promise object call the resolve or reject
+callbacks.  Given that Promises are commonly used with asynchronous code, you
+might think there is a 'run' method we need to call to start the execution of
+code (asynchronous or not), but that is not true. The Promise executes whatever
+code is included in the executor upon initialization of the object (because the
+executor is passed an argument to the constructor). Therefore, the Promise
+begins 'running' as soon as it is instantiated.
+
+The first parameter of the executor is always the 'resolve' callback, which is
+ran on whatever conditions the executor function has declared to be a success.
+The second parameter of the executor is always the 'reject' callback, which is
+ran on whatever conditions the executor function has declared to be a failure.
+Neither the resolve, nor reject callbacks NEED to be called.  Where, when, and
+if they are called are up to the programmer to declare within the executor.
+
+The names you use to reference the resolve and reject callbacks do not matter of
+course, but conventionally they should relate to the success or failure of a
+given task. While both of these callbacks are provided regardless by javascript
+itself upon instantiation, they are both optional in the parameter list of your
+executor function or to use within the executor logic.
+
+When either the resolve or reject callbacks are ran, the Promise changes state
+to FULFILLED or REJECTED. Given that a Promise becomes immutable after it has
+been resolved or rejected, once either one of the resolve or reject callbacks is
+triggered, if its counterpart eventually meets the conditions to trigger its
+execution, it will have no effect on the state of the object.
+
+While the conditions which trigger a failure are up to the programmer to declare
+in the executor, when the reject callback is triggered (which modifies the state
+to 'rejected'), the js engine treats this as an error, and it needs to be
+handled as such.  It is conventional to pass Error objects as arguments to
+reject calls, but not required and the engine will treat it similar to an error
+regardless of what the reject handler uses as an argument.
+
+RESULT OF THE PROMISE
+-------------------------------------------------------------------------------
+The resolve and reject handlers both accept an argument which is what will be
+assigned to the 'result' of the Promise when either of these functions are
+eventually called.  Again, once one of these callbacks is ran, the Promise
+becomes immutable, so the execution of its counterpart will have no effect on
+the 'result' once the Promise is either resolved or rejected.
+
+The variable name passed to a resolve callback is typically 'value', while it is
+typically 'error' for a reject callback.  This is by convention.
+
+By convention, if a variable is passed as an argument to to the resolve or
+reject handlers rather than a literal constant or newly created Object, the
+variable name is value for the resolve handler and error for the reject handler.
+
+By convention, the reject callback usually takes in an Error object as an
+argument.
+
+Simply resolving or rejecting a Promise does nothing with the result.  The .then
+or .catch methods are used to handle the result of the Promise upon its
+fulfillment or rejection.
+
+When a Promise has settled:
+    - if it was successfull:
+        - the promise state is 'fulfilled'
+        - the value is stored in the 'result' property
+
+    - if it was unsuccessful:
+        - the promise state is 'rejected'
+        - the value is stored in the 'reason' property
+
+
+' THEN '  AND  ' CATCH '  METHODS
+-------------------------------------------------------------------------------
+The 'then' method is a method of a Promise object which takes in up to two
+arguments which are both handlers.  The purpose of these handlers is to handle
+the 'result' of the Promise.  The .then method is therefore executed only when
+the Promise is settled (either fullfilled or rejected).
+
+Once the Promise has been settled, the first argument of the .then method is
+executed only if the Promise has been resolved.  The second argument of the
+.then method is executed only if the Promise has been rejected.  These handlers
+take in a single argument which is the result of the settled Promise.
+
+    const p = new Promise((result, reject) => {
+        setTimeout(() => {
+            rej(new Error("We got an error!"))
+        }, 1000);
+    })
+
+    p.then(
+        (result) => console.log(result),
+        (error) => console.error(error.message)
+    );
+
+The variable names passed in as arguments to the handlers in the then method do
+not matter.  They merely represent the result of the Promise.  The callback
+functions we use in the then method exist to allow us to 'do something' or
+handle the result of the Promise.
+
+If we are only interested in successful completions, then we can provide only a
+single callback to the then method.
+
+If we are only interested errors, then we can use null as first argument and
+provide a second errorHandlingCallback for the second argument:
+
+    const p = new Promise((res, rej) => {
+        setTimeout(() => {
+            rej(new Error("We got an error!"))
+        }, 1000);
+    })
+
+    // note that these arguments are meant to be callbacks, so its valid to
+    // pass in just console.error or a predefined handler instead of the
+    // anonymous function syntax in the previous example
+    p.then(
+        null,
+        console.error,
+    )
+
+But in the example above, what if we did not provide a second callback function
+to handle the result when the Promise is rejected?  Regardless of whether or not
+the reject callback rejected to an Error object, all Promise rejections throw
+exceptions unless explicitly handled.  In the example below, the rejection is
+unhandled and therefore the final log statement in the setTimeout block will
+never be executed because the unhandled rejection stops the code by throwing an
+error.  If we uncommented out the second callback in the then method we would
+have handled the error and the code would continue to run.
+
+    const p = new Promise((res, rej) => {
+        setTimeout(() => {
+
+            // reject to a string or an Error object, an
+            // exception will be thrown either way if we don't
+            // handle it
+            rej("error");
+        }, 1000);
+    })
+
+    p.then(
+        (result) => console.log(result),
+        // (error) => console.error(error),
+    )
+
+
+    setTimeout(() => {
+        console.log("Hey bro I am not gonna run because ")
+        console.log("we didn't handle the reject")
+    }, 1500)
+
+
+There are two ways to handle an error and they both achieve the same result.
+The first is to provide a second callback to the then method.  The second way is
+to chain a catch method.  The catch method can be called directly after the
+Promise initialization or before the then method as well, but where you place it
+can make it more practical.  It should be placed after the .then method, or
+right after the initialization if you don't care about the result if successful.
+Placing a .catch method directly after the initialization is analagous to '
+promise.then(null, handleReject); '.  Typically, the .catch method should be
+placed at the end of a Promise chain because that way any error or rejection
+within the chain is handled.
+
+    const p = new Promise((res, rej) => {
+        setTimeout(() => {
+            rej(new Error("We got an error"));
+        }, 1000);
+    });
+
+    p
+        .then(console.log)
+        .catch((err) => console.error(err.message));
+
+The .catch method catches not only errors explicitly thrown by the rej callback,
+but any error which occurs during the lifetime of the Promise.  If any error
+occurs while the Promise is waiting to be resolved, or if the reject callback is
+triggered, the compiler goes straight to the .then method and checks if there is
+a second argument to handle the error.  If this is not provided, it travels to
+the .catch method if it is provided and executes the .catch handler.
+
+    new Promise((res, rej) => {
+        throw new Error("We got an error brah");
+        res(5);
+    })
+        .then(console.log, (err) => console.log("Error handled in .then"))
+        .catch((err) => console.error(err.message));
+        // prints: Error handled in .then
+
+
+    new Promise((res, rej) => {
+        throw new Error("We got an error brah");
+        res(5);
+    })
+        .then(console.log)
+        .catch((err) => console.error(err.message));
+        // prints: We got an error brah
+
+
+FINALLY METHOD
+-------------------------------------------------------------------------------
+The finally method takes in a callback as an argument which acts as a handler
+for performing cleanup duty after the Promise is either resolved or rejected.
+
+A finally handler takes in no arguments.  Given that it exists only to provide
+some necessary cleanup, the Promise object's result is irrelevant to the finally
+method.
+
+A finally handler should return nothing.  It CAN return something, but if it
+does, it is silently ignored.
+
+    let intervalId = null;
+
+    const p = new Promise((res, rej) => {
+        let i = 0;
+        intervalId = setInterval(() => {
+            console.log(i++);
+        }, 100)
+
+        setTimeout(() => {
+            rej(new Error("We got an error"));
+        }, 5000);
+    })
+        .finally(() => {
+            clearInterval(intervalId);
+        })
+        .then(console.log)
+        .catch((err) => console.error(err.message));
+
+Note: the .finally method is ran before then .then and .catch method, but still
+allows you to method chain .then and .catch to the finally method.
+
+More on this statement from the above:
+
+    ' the Promise object's result is irrelevant to the finally method. '
+
+This is not entirely true.  While the Promise object's result is irrelevant to
+the handler passed as an argument to the finally method, the finally method
+returns a shallow copy of the Promise that called the .finally method.
+
+    const rootPromise = new Promise(resolve => {
+        resolve(1);
+    })
+
+    const a = rootPromise;
+    const b = rootPromise.finally();
+
+    console.log(rootPromise === a); // true
+    console.log(rootPromise === b); // false
+
+
+MORE ON THE CATCH METHOD
+-------------------------------------------------------------------------------
+The .catch method not only catches:
+
+    - errors thrown in the executor
+    - errors thrown by the Promise being rejected
+
+but also accidental errors thrown anywhere in the Promise chain leading up to
+the .catch method.
+
+If an error is thrown, the compiler skips to the next available handler (if
+there is one), whether or not this is in the form of a .then method which
+contains a second callback, or if its in the form of a catch method.
+
+
+-------------------------------------------------------------------------------
+PROMISE CHAINING
+-------------------------------------------------------------------------------
+The onReject and onFulfilled handlers (from the .then method) may return a
+value.  When either of these handlers are called and eventually return
+something, the value which they return becomes the result of a new Promise
+object.  Therefore, .then methods can be chained because they always implicitly
+return new Promise objects.  Essentially, the .then method waits for either of
+its handlers to return something (or return undefined) and when that happens the
+.then method assigns that value to the result of a new Promise which is
+returned.
+
+Though the .then method handlers always implicitly returns a Promise object, it
+can also explicitly return a new Promise object which is of course defined with
+an executor just how you would define any other Promise object.
+
+The .then method can:
+    - simply be a void function which handles a settled Promise (it will still
+      return a Promise settled to undefined though)
+    - return a value which is then wrapped in a new Promise and that returned
+      value becomes the result of said wrapped Promise to allow for Promise
+      chaining
+    - explicitly return a new Promise object which allows you to make use of the
+      resolve and reject callbacks which might be more useful or readable than
+      simply returning a value in certain cases
+
+To be precise, when the onReject or onFulfilled handlers don't explicitly return
+a Promise, they don't actually implicitly return the return value wrapped in a
+Promise either.  They return an object referred to as a Thenable which is
+wrapped in a Promise.  A Thenable is a 'Promise compatible' object with only the
+.then method which allows it to be chained with more .then methods.  By wrapping
+the Thenable in a new Promise object, it allows the Thenable to utilize the
+.catch and .finally methods as well.
+
+To be precise, when the onReject or onFulfilled handlers don't explicitly return
+a promise, the value which is returned is wrapped in a Promise.resolve(value) or
+Promise.reject(value).  If the handlers explictly return a Promise, the return
+value is as is (it isn't wrapped in a Promise).
+
+The handlers can also return a Thenable, which is a Promise compatible object.
+A Thenable is basically an object with a .then method that is used by third
+parties to customize asynchronous operations.  If a Thenable is returned the JS
+Engine will encapsulate it into a Promise to ensure it integrates seamlessly
+into the Promise chain.  Thenables might be created if you have a highly used
+piece of asynchronous code that is used with Promises.
+
+    // this commented out thenable won't work because the .then method
+    // needs to be in the executor function format
+    // const thenable = {
+    //     then: () => "this won't print"
+    // }
+
+    const thenable = {
+        then: ((resolve, reject) => {
+            reject(new Error("Fuck you brah"));
+            resolve("Success");
+        }),
+    };
+
+    Promise.resolve(thenable)
+        .then(console.log)
+        .catch((err) => console.error(err.message));
+
+-------------------------------------------------------------------------------
+
+    new Promise((res, rej) => {
+        res(5);
+    })
+        .then((res) => res * 2) // return 5 * 2
+        .then((res) => res * 2) // return 10 * 2
+        .then((res) => res * 2) // return 20 * 2
+        .then((res) => res * 2) // return 40 * 2
+        .then(console.log)      // log 80 return undefined
+        .then((res) => res * 2) // return undefined * 2
+        .then(console.log)      // log undefined * 2 which equals NaN
+
+    // The above example comments should ideally read "return new Promise with
+    // the result of said Promise equal to ..." but they simply read "return
+    // ..." instead for simplicity
+
+    // The above comment touches on a crucial distinction in the behavior of
+    // Promises. Remember, you cannot do anything with the result of a Promise
+    // unless you use a Promise method like .then or .catch to handle that
+    // result
+
+-------------------------------------------------------------------------------
+
+    // same as the example above but explicitly return a Promise
+    new Promise((res, rej) => {
+        res(5);
+    })
+        .then((result) => {
+            return new Promise((res, rej) => {
+                res(result * 2);
+            })
+        })
+        .then((result) => {
+            return new Promise((res, rej) => {
+                res(result * 2);
+            })
+        })
+        .then((result) => {
+            return new Promise((res, rej) => {
+                res(result * 2);
+            })
+        })
+        .then((result) => {
+            return new Promise((res, rej) => {
+                res(result * 2);
+            })
+        })
+        .then(console.log); // log 80 return Promise resolved to undefined
+
+-------------------------------------------------------------------------------
+
+    // similar concept as the above examples, but the second .then does not
+    // return anything so it logs undefined.  The above example works because
+    // it returns a Promise which resolves and therefore updates the result of
+    // the returned Promise
+    new Promise((res) => {
+        res(5);
+    })
+        .then((result) => {
+            result *= 2;
+            return result;
+        })
+        .then((result) => {
+            result *= 2;
+        })
+        .then(console.log); // undefined
+
+
+TRACING PROMISE INSTANTIATION / TRACING PROMISE EXECUTION
+-------------------------------------------------------------------------------
+When a Promise is instantiated, its executor runs synchronously.  The resolution
+of the Promise is even handled synchronously.  However, any handlers from the
+.then, .catch, or .finally methods are pushed to the task queue and thus, those
+are handled asynchronously.  They compiler caches the handlers which are chained
+to once another.  The handlers themselves are not necessarily added
+sequentially.
+
+Here is an example to demonstrate the order in which statements are executed:
+
+    const p = new Promise((res, rej) => {
+        console.log("1");
+        res("4");
+    })
+    p.then(console.log);
+    console.log(p) // logs Promise { <fulfilled> '4' };
+    console.log("3");
+    // 1
+    // Promise { <fulfilled> '4' }
+    // 3
+    // 4
+
+
+
+REQUEST QUEUES
+-------------------------------------------------------------------------------
+
+    // run 4 promises at a time
+    function createTask() {
+        const timeout = Math.floor(Math.random() * 5000);
+
+        return new Promise((resolve, reject) => {
+            setTimeout(() => {
+                reject(new Error("Time Exceeded"));
+            }, 4000);
+
+            setTimeout(() => {
+                resolve(`${timeout}`)
+            }, timeout);
+        })
+    }
+
+    function createQueue(tasks, maxRequests = 4) {
+        let currRequests = 0;
+        let index = 0;
+
+        return new Promise(done => {
+            function handleResult(index) {
+                return (result) => {
+                    console.log(result);
+                    tasks[index] = result;
+                    --currRequests;
+
+                    // calling getNextTask here and in the reject handler
+                    // is the key to this working the way it does
+                    getNextTask();
+                }
+            }
+
+            function handleError(index) {
+                return (error) => {
+                    console.log(error.message);
+                    tasks[index] = error.message;
+                    --currRequests;
+                    getNextTask();
+                }
+            }
+
+            function getNextTask() {
+                if (currRequests < maxRequests && index < tasks.length) {
+                    tasks[index]()
+                        .then(handleResult(index))
+                        .catch(handleError(index));
+
+                    ++index;
+                    ++currRequests;
+                    getNextTask();
+                } else if (currRequests === 0 && index === tasks.length) {
+                    done(tasks);
+                }
+            }
+
+            getNextTask();
+        })
+    }
+
+    createQueue([
+        createTask,
+        createTask,
+        createTask,
+        createTask,
+        createTask,
+        createTask,
+        createTask,
+        createTask,
+    ])
+        .then(console.log)
+
+-------------------------------------------------------------------------------
+
+    // same as example above but class based
+    class TaskQueue {
+        constructor(tasks, maxConcurrent = 4) {
+            this.tasks = tasks;
+            this.maxConcurrent = maxConcurrent;
+            this.currentTasks = 0;
+            this.results = [];
+            this.resolve = undefined;
+        }
+
+        init() {
+            return new Promise(resolve => {
+                this.resolve = resolve;
+                this.addTask(this.resolve)
+            })
+        }
+
+        handleResult = (result) => {
+            --this.currentTasks;
+            this.results.push(result);
+            this.addTask(this.resolve);
+        }
+
+        handleReject = (error) => {
+            --this.currentTasks;
+            this.results.push(error.message);
+            this.addTask(this.resolve);
+        }
+
+        addTask(resolve) {
+            if (
+                this.currentTasks < this.maxConcurrent &&
+                this.tasks.length
+            ) {
+                const nextUp = this.tasks.shift();
+                ++this.currentTasks;
+                nextUp()
+                    .then(this.handleResult)
+                    .catch(this.handleReject);
+
+                this.addTask(this.resolve);
+            } else {
+                if (!this.tasks.length && !this.currentTasks) {
+                    resolve(this.results);
+                }
+            }
+        }
+    }
+
+    function createTask() {
+        return new Promise((res, rej) => {
+            const timeout = Math.floor(Math.random() * 500);
+
+            const rejId = setTimeout(() => {
+                console.log("Time Exceeded");
+                clearTimeout(resId);
+                rej(new Error("Time Exceeded"))
+            }, 400);
+
+            const resId = setTimeout(() => {
+                console.log(timeout);
+                clearTimeout(rejId);
+                res(timeout);
+            }, timeout)
+        })
+    }
+
+    const tq = new TaskQueue([
+        createTask,
+        createTask,
+        createTask,
+        createTask,
+        createTask,
+        createTask,
+        createTask,
+        createTask,
+        createTask,
+    ]);
+
+    tq.init().then(console.log);
+
+-------------------------------------------------------------------------------
+
+    // async & await sequentially run Promises one at a time
+    function createTask() {
+        const timeout = Math.floor(Math.random() * 5000);
+
+        return new Promise((resolve, reject) => {
+            const errorId = setTimeout(() => {
+                console.log("Time Exceeded");
+                reject(new Error("Time Exceeded"));
+            }, 4000);
+
+            setTimeout(() => {
+                clearTimeout(errorId);
+                console.log(timeout);
+                resolve(`${timeout}`)
+            }, timeout);
+        });
+    }
+
+    async function createQueue(tasks) {
+        const results = [];
+
+        for (const task of tasks) {
+            try {
+                await task().then(res => results.push(res));
+
+                // can also be written as: //
+                // const result = await task();
+                // results.push(result);
+
+            } catch (error) {
+                results.push(error.message);
+            }
+        }
+
+        return Promise.resolve(results);
+    }
+
+    createQueue([
+        createTask,
+        createTask,
+        createTask,
+        createTask,
+        createTask,
+        createTask,
+        createTask,
+    ])
+        .then(console.log)
+
+
+
+-------------------------------------------------------------------------------
+PROMISE STATIC METHODS
+-------------------------------------------------------------------------------
+There are 6 static methods in the Promise class.  They are:
+
+    Promise.all
+    Promise.allSettled
+    Promise.race
+    Promise.any
+    Promise.resolve
+    Promise.reject
+
+
+PROMISE.ALL  (ALL OR NOTHING)
+-------------------------------------------------------------------------------
+Promise.all is used when you want to execute many Promises in parallel and wait
+until all of them are ready.
+
+Promise.all accepts an iterable (usually an array of Promises) and returns a new
+Promise.  The Promise it returns resolves when all listed Promises are resolved,
+and the array of their results becomes the result of Promise returned from
+Promise.all.
+
+Promise.all is 'all or nothing' in the sense that it the Promise it returns is
+rejected if any one of its children reject.
+
+    Promise.all([
+        new Promise((res, rej) => {
+            setTimeout(() => {
+                res(0);
+            }, 1000)
+        }),
+        new Promise((res, rej) => {
+            setTimeout(() => {
+                res(1);
+            }, 2000)
+        }),
+        new Promise((res, rej) => {
+            setTimeout(() => {
+                res(2);
+            }, 3000)
+        }),
+    ])
+        .then(console.log);
+        // logs [0, 1, 2]
+
+    // with rejections
+    Promise.all([
+        new Promise((res, rej) => {
+            setTimeout(() => {
+                res(0);
+            }, 1000)
+        }),
+        new Promise((res, rej) => {
+            setTimeout(() => {
+                rej(new Error("This is an error"));
+            }, 2000)
+        }),
+        new Promise((res, rej) => {
+            setTimeout(() => {
+                res(2);
+            }, 3000)
+        }),
+    ])
+        .then(console.log)
+        .catch(err => console.error(err.message));
+        // logs "This is an error"
+
+
+    // with handled rejections (though this sort of defeats the purpose
+    // of the Promise.all method)
+    Promise.all([
+        new Promise((res, rej) => {
+            setTimeout(() => {
+                res(0);
+            }, 1000)
+        }).catch(err => console.log(err.message)),
+        new Promise((res, rej) => {
+            setTimeout(() => {
+                rej(new Error("This is an error"));
+            }, 2000)
+        }).catch(err => console.log(err.message)),
+        new Promise((res, rej) => {
+            setTimeout(() => {
+                res(2);
+            }, 3000)
+        }).catch(err => console.log(err.message)),
+    ])
+        .then(console.log)
+        // logs [0, undefined, 2]
+
+If an error is thrown and not explicitly handled in the Promise instantiation
+within the array passed as an argument, then the Promise returned from
+Promise.all also immediately rejects.  The results of the rest of the Promises
+are ignored.  The Promises will continue to run, but the Promise.all immediately
+rejects and thus the results of the other Promises are no longer relevant to the
+function call to Promise.all.  Promise.all however, is by design 'all or
+nothing' so circumventing this behavior in the above example would not be
+considered best practice.
+
+
+PROMISE.ALLSETTLED
+-------------------------------------------------------------------------------
+While Promise.all rejects as a whole if any promise rejects, Promise.allSettled
+resolves when all promises settle, regardless of if they rejected or not.
+Promise.allSettled resolves to an array of Promises, but not their values as is
+the case with Promise.all.
+
+    Promise.allSettled([
+        new Promise((res, rej) => {
+            setTimeout(() => {
+                res(0);
+            }, 1000)
+        }),
+        new Promise((res, rej) => {
+            setTimeout(() => {
+                rej(new Error("1"));
+            }, 2000)
+        }),
+        new Promise((res, rej) => {
+            setTimeout(() => {
+                res(2);
+            }, 3000)
+        })
+    ])
+        .then(console.log);
+        // logs
+        // [
+        //     { status: 'fulfilled', value: 0 },
+        //     { status: 'rejected', reason: Error: 1 at...}
+        //     { status: 'fulfilled', value: 2 },
+        // ]
+
+-------------------------------------------------------------------------------
+
+    function fetchSimulation(num) {
+        if (num % 2 === 0) {
+            return new Promise((res) => {
+                setTimeout(() => {
+                    res(num);
+                }, num * 100);
+            });
+        } else {
+            return new Promise((_, rej) => {
+                setTimeout(() => {
+                    rej(new Error(`${num}`));
+                }, num * 100)
+            });
+        }
+    }
+
+    const urls = [4, 6, 2, 5, 3];
+
+    Promise.allSettled(urls.map(url => fetchSimulation(url)))
+        .then(results => {
+            results.forEach((result, index) => {
+                if (result.status === "fulfilled") {
+                    console.log(`${urls[index]}: ${result.value}`);
+                } else {
+                    console.log(`${urls[index]}: ${result.reason}`);
+                }
+            })
+        })
+
+Some browsers will not natively support Promise.allSettled.  To get around this
+you can do a polyfill:
+
+    Promise.allSettledPolyfill = (promises) => {
+        /*
+            * Some browsers don't support allSettled.  To get around
+            * this you can do a Polyfill which basically adds a .then
+            * method to each of the Promises in the passed in array to
+            * explicitly "resolve" all the Promises to a declared value,
+            * even if they reject!  Then return Promise.all() with the
+            * new Promises that will not reject.
+            *
+            * Regardless of if the any of the Promises resolve or reject,
+            * the .then method will return the objects which are
+            * returned here wrapped in a Promise.  Promise.all doesn't
+            * settled when each Promise resolves, it settles when each
+            * .then method has resolved because thats how point of
+            * insertion works
+        */
+
+        const convertedPromises = promises.map(p => {
+            // Promise.resolve(p) just to make sure p is
+            // treated as a Promise in case the programmer
+            // accidently passed in a non-promise
+            return Promise.resolve(p)
+                .then(
+                    value => {
+                        return { status: "fulfilled", value: value };
+                    },
+                    reason => {
+                        return { status: "rejected", reason: reason };
+                    }
+                )
+        })
+
+        return Promise.all(convertedPromises);
+    }
+
+    function fetchSimulation(num) {
+        if (num % 2 === 0) {
+            return new Promise((res) => {
+                setTimeout(() => {
+                    res(num);
+                }, num * 100);
+            });
+        } else {
+            return new Promise((_, rej) => {
+                setTimeout(() => {
+                    rej(new Error(`${num}`));
+                }, num * 100)
+            });
+        }
+    }
+
+    const urls = [4, 6, 2, 5, 3];
+
+    if (!Promise.allSettled) {
+        Promise.allSettledPolyfill(urls.map(url => fetchSimulation(url)))
+            .then(results => {
+                results.forEach((result, index) => {
+                    if (result.status === "fulfilled") {
+                        console.log(`${urls[index]}: ${result.value}`);
+                    } else {
+                        console.log(`${urls[index]}: ${result.reason}`);
+                    }
+                })
+            });
+    }
+
+
+PROMISE.RACE
+-------------------------------------------------------------------------------
+Waits for the first settled Promise in an array of Promises and gets its result
+or error.
+
+    function randomTimeout() {
+        return Math.floor(Math.random() * 1000);
+    }
+
+    Promise.race([
+        new Promise(res => {
+            const time = randomTimeout();
+            setTimeout(() => {
+                res(time);
+            }, time);
+        }),
+        new Promise(res => {
+            const time = randomTimeout();
+            setTimeout(() => {
+                res(time);
+            }, time);
+        }),
+        new Promise((_, rej) => {
+            const time = randomTimeout();
+            setTimeout(() => {
+                rej(new Error(`${time}`));
+            }, time);
+        }),
+    ])
+        .then(console.log);
+        // logs the value (or reason) of the first Promise to settle
+
+
+PROMISE.ANY
+-------------------------------------------------------------------------------
+Similar to Promise.race, but only cares about fulfilled Promises.  Promise.any
+returns the value of the first settled Promise that is fulfilled.  It ignore
+rejected Promises.  But what about the scenario in which all the Promises
+reject?  In the scenario that all Promises reject, Promise.any returns a Promise
+that is rejected with AggregateError, a special Error object that stores all
+Promise errors in its errors property
+
+    function randomTimeout() {
+        return Math.floor(Math.random() * 1000);
+    }
+
+    Promise.any([
+        new Promise((_, rej) => {
+            const time = randomTimeout();
+            setTimeout(() => {
+                rej(time);
+            }, time);
+        }),
+        new Promise((_, rej) => {
+            const time = randomTimeout();
+            setTimeout(() => {
+                rej(new Error(`${time}`));
+            }, time);
+        }),
+        new Promise(res => {
+            const time = randomTimeout();
+            setTimeout(() => {
+                res(`${time}: da only resolved`);
+            }, time);
+        }),
+    ])
+        .then(console.log);
+        // logs $$$: da only resolved
+
+    function randomTimeout() {
+    return Math.floor(Math.random() * 1000);
+}
+
+-------------------------------------------------------------------------------
+
+    Promise.any([
+        new Promise((_, rej) => {
+            const time = randomTimeout();
+            setTimeout(() => {
+                rej(time);
+            }, time);
+        }),
+        new Promise((_, rej) => {
+            const time = randomTimeout();
+            setTimeout(() => {
+                rej(time);
+            }, time);
+        }),
+        new Promise((_, rej) => {
+            const time = randomTimeout();
+            setTimeout(() => {
+                rej(time);
+            }, time);
+        }),
+    ])
+        .catch((aggregateError) => {
+            console.log(aggregateError.errors);
+        });
+        // logs [rejTime, rejTime, rejTime] where rejTime represents the
+        // random time determined at runtime from randomTimeout()
+
+
+PROMISE.RESOLVE / PROMISE.REJECT
+-------------------------------------------------------------------------------
+The Promise.resolve and Promise.reject are rarely needed in modern code due to
+async / await.
+
+Promise.resolve creates a resolved Promise with the result being what is passed into
+Promise.resolve.
+
+    const resolvedPromise = Promise.resolve(value)
+    // resolvedPromise has a result of $value
+
+                    SAME AS
+
+    const resolvedPromise = new Promise(resolve => resolve(value));
+
+The Promise.resolve method is used for compatibility.
+    - If you want some value to be treated a Promise that has resolved to that
+      value so that you get all of the functionality that comes with a Promise,
+      you can use the Promise.resolve method.
+    - Say your function should always return a Promise, but there is an edge
+      case where it makes sense to just return a value, Promise.resolve could be
+      used to make prevent a union return type in TypeScript.  That
+      functionality extends beyond just TypeScript, but just makes your code
+      cleaner.
+
+Promise.reject does the opposite of Promise.resolve.
+
+    const promise = Promise.reject(new Error("My Error"));
+
+                    SAME AS
+    const promise =
+        new Promise((resolve, reject) => reject(new Error("My Error")));
+
+
+-------------------------------------------------------------------------------
+PROMISIFICATION
+-------------------------------------------------------------------------------
+Going back to the callback hell example with the loadScript function.  The
+callback is called when the script either loads or has an error loading.  If it
+loads successfully, it calls the callback with null as its first parameter, if
+not, it calls the callback with an Error as its first parameter.  This is
+similar to how it would work with Promises where the result/reason of the
+Promise decides which callback to call from the chain of Promise methods. (first
+callback from .then parameters, or second callback from .then parameters/.catch
+callback).
+
+    // scroll up and revisit the first example to see the full implementation
+    // of this
+    function loadScript(src, callback) {
+        const script = document.createElement("script");
+        script.src = src;
+
+        script.onload = () => {
+            callback(null, script)
+        }
+
+        script.onerror = () => {
+            callback(new Error(`Error loading script for ${src}`));
+        }
+
+        document.head.append(script);
+    }
+
+THE SAME AS ABOVE BUT USING PROMISES:
+
+    function loadScriptPromise(src) {
+        return new Promise((resolve, reject) => {
+            loadScript(src, (error, script) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve(script);
+                }
+            })
+        })
+    }
+
+    loadScriptPromise("./path/to/script1.js")
+        .then(_ => { loadScriptPromise("./path/to/script2.js") })
+        .catch(err => console.error(err.message))
+        .then(_ => { loadScriptPromise("./path/to/script3.js") })
+        .catch(err => console.error(err.message))
+        .then(_ => { loadScriptPromise("./path/to/script4.js") })
+        .catch(err => console.error(err.message));
+
+Here is how the loadScript Promise example could have been rewritten using a
+more generic promisify function:
+
+    function promisify(func) {
+        return function(...args) {
+            return new Promise((resolve, reject) => {
+                function callback(error, result) {
+                    if (error) {
+                        reject(error);
+                    } else {
+                        resolve(result);
+                    }
+                }
+
+                args.push(callback);
+
+                func.call(this, ...args);
+            })
+        }
+    }
+
+    const loadScriptPromise = promisify(loadScript);
+    loadScriptPromise("./path/to/script1.js")
+        .then(_ => { loadScriptPromise("./path/to/script2.js") })
+        .catch(err => console.error(err.message))
+        .then(_ => { loadScriptPromise("./path/to/script3.js") })
+        .catch(err => console.error(err.message))
+        .then(_ => { loadScriptPromise("./path/to/script4.js") })
+        .catch(err => console.error(err.message));
+
+
+-------------------------------------------------------------------------------
+MICROTASK QUEUE
+-------------------------------------------------------------------------------
+Promise handlers (.then / .catch / .finally) are always asyncronous.  Even when
+a Promise immediately resolved, the code in the lines below the Promise methods
+will still execute before the methods themselves.
+
+    const promise = Promise.resolve();
+    promise.then(() => console.log("Going through da microtask queue"));
+    console.log("Script code finished");
+    // LOGS
+    // Script code finished
+    // Going throuhg da microtask queue
+
+ECMA calls it the PromiseJobs, but its more often referred to as the "microtask
+queue" which is a V8 Engine term.
+
+When a Promise is settled, its next handler from the .then/catch/finally method
+chain is added to the microtask queue.  Once the callstack is empty, is dequeues
+the next item from the microtask queue and the handler will need to wait its
+turn before the it is executed.  The chain of handlers are not added to the
+microtask queue sequentially.  They each need to wait to their turn to be added.
+
+The JavaScript Engine will keep track of the methods chained to the Promise /
+method in the chain when handlers are added to the microtask queue.  If an error
+occurs and there are no methods chained, it will be an unhandled rejection.
+
+
+-------------------------------------------------------------------------------
+ASYNC / AWAIT
+-------------------------------------------------------------------------------
+
+ASYNC
+-------------------------------------------------------------------------------
+The async keyword can be placed before a function defintion.  The async keyword
+is not used when calling a function, only when declaring a function.
+
+    async function myFunction() {
+        return 1;
+    }
+
+The keyword async before a function means only that the function will always
+return a Promise.  If the function does not explicitly return a Promise, the
+function will implicitly return a Promise.
+
+    async function brah() {
+        return "brah";
+    }
+
+    // same as the above (this is essentially what the compiler is doing)
+    // function brah() {
+    //     return Promise.resolve("brah");
+    // }
+
+    brah().then(console.log); // logs: brah
+
+WHEN AN ASYNC FUNCTION IS CALLED:
+    1: It immediately returns an unsettled Promise
+    2. Immediately after returning the unsettled Promise, it goes back to the
+    function body and starts executing the function body synchronously.  It does
+    not execute statements that come after until the statements in the function
+    body are executed.
+    2. The function body is executed synchronously up until the first await
+    statement
+
+Here are two examples to demonstrate the above:
+
+    async function example() {
+        console.log("1");
+        console.log("2");
+        console.log("3");
+        console.log("4");
+        return "done"
+    }
+
+    const promise = example();
+    console.log(promise);
+    promise.then(result => console.log("resolved with: " + result));
+    // 1
+    // 2
+    // 3
+    // 4
+    // Promise { "done" }
+    // resolved with: done
+
+-------------------------------------------------------------------------------
+
+    async function example() {
+        console.log("1");
+        console.log("2");
+        console.log(await Promise.resolve("3"));
+        console.log("4");
+        return "done"
+    }
+
+    const promise = example();
+    console.log(promise);
+    promise.then(result => console.log("resolved with: " + result));
+    // 1
+    // 2
+    // Promise { <pending> }
+    // 3
+    // 4
+    // resolved with: done
+
+This is slightly different to how a non-async function would operate.  A
+non-async function would add immediately add the function to the call stack and
+return its return value to the point of insertion.  An async function
+immediately returns an unsettled Promise (which resolves upon the completion of
+the function), THEN adds the function to the call stack and starts executing.
+
+AWAIT
+-------------------------------------------------------------------------------
+The keyword await works ONLY inside of functions declared with the async
+keyword.  The await keyword pauses the execution of the function (pushes the
+rest of the code to the microtask queue) and once the Promise after the await
+keyword resolves, the function execution is both started again AND the await
+keyword returns the value of that Promise.  Await essentially removes the need
+to use the .then method.
+
+    async function brah() {
+        const result = await new Promise(res => res("brah"));
+        console.log(result);
+    }
+
+    brah(); // logs: brah
+
+Await has no practical effect on expressions which do not evaluate to Promises.
+However, it also does not throw an error.  Await used in front of a non-Promise
+expression still wraps the evaluation into a resolved Promise to ensure the
+value is still treated as a Promise.
+
+    function getBrah() {
+        return Promise.resolve("brah");
+    }
+
+    async function getAsyncBrah() {
+        return "brah"
+    }
+
+    async function brah() {
+        // await has no effect here, but it also doesn't throw an error
+        const brah = await getBrah();
+        console.log(brah);
+
+        // await only works on Promises, so this is valid
+        const otherBrah = await Promise.resolve("other brah");
+        console.log(otherBrah);
+
+        // this also works because getBrah returns a resolved Promise
+        const brah3 = await getBrah();
+        console.log(brah3 + "3");
+
+        // this also works because getAsyncBrah() implicitly returns
+        // a Promise
+        const brah4 = await getAsyncBrah();
+        console.log(brah4 + "4");
+
+        // await can also be used with Promise.all of course
+        const allBrahs = await Promise.all([
+            getAsyncBrah(),
+            getAsyncBrah(),
+            getAsyncBrah(),
+            getAsyncBrah()
+        ]);
+
+        for (let i = 0; i < allBrahs.length; ++i) {
+            console.log(`${i}: ${allBrahs[i]}`);
+        }
+    }
+
+    brah();
+    // brah
+    // other brah
+    // brah3
+    // brah4
+    // 0: brah
+    // 1: brah
+    // 2: brah
+    // 3: brah
+
+The await keyword pauses the execution of the function until the Promise
+settles, and then resumes the execution of the function with the result of the
+Promise.  This is non-blocking because the JavaScript Engine is free to handle
+other tasks (rest of script, task queue jobs) while it waits for the settlement
+of the Promise.
+
+Using async and await can be thought of as a more high-level, and therefore
+readable way of writing Promises or handling asynchronous code.  By eliminating
+the need for the .then method in most cases, the code can be read more easily
+line by line.
+
+The below example highlights how await replaces the .then method in an async
+function.  The example below throws an error because the 'promise' const is not
+actually a Promise but the result of the evaluated Promise.resolve expression.
+
+    async function brah() {
+        const promise = await Promise.resolve("brah");
+        promise.then(console.log);
+        // the above line should be simply: console.log(promise)
+        // or you could remove the await keyword and it would also work
+    }
+
+    brah();
+
+Remember that async and await are high-level abstractions.  You can still
+execute a Promise and add a .then to it in an async function even though that
+defeats the purpose of an async function.  Take the example below.  Both the
+Promise.resolve expressions are being added to the task queue same as the other.
+The function logs 1 and 2 in that order as you would expect.  While there is
+indeed some fancy business going on underneath the hood, the code is simply more
+readable.
+
+    async function brah() {
+        const promise = Promise.resolve("1");
+        promise.then(console.log);
+
+        const result = await Promise.resolve("2");
+        console.log(result);
+    }
+
+    brah();
+    // 1
+    // 2
+
+
+TRY / CATCH WITH ASYNC & AWAIT
+-------------------------------------------------------------------------------
+Given that the await keyword used inside of an async function returns the result
+of a function, it eliminates much of the need for chaining .then methods to a
+Promise.  However, await doesn't handle errors by itself like it does the
+resolve of a Promise.  The code below stops our code by causing an error which
+was not handled.
+
+    async function brah() {
+        const brah = await Promise.reject(new Error("brah but rejected"));
+        console.log(brah);
+    }
+
+    brah();
+
+This is where adding a try / catch block comes in handy.  Any error in the try
+block is immediately caught by the catch block, but unfortunately, the rest of
+the code in the try block is not executed so you might need to design your code
+to include multiple try catch blocks.
+
+    async function brah() {
+        try {
+            const brah = await Promise.reject(new Error("brah but rejected"));
+            console.log(brah);
+            console.log("not executed");
+        } catch (error) {
+            console.error(error.message);
+        }
+
+        try {
+            const brah2 = await Promise.reject(new Error("another rejected"));
+            console.log(brah2);
+            console.log("still not executed");
+        } catch (error) {
+            console.error(error.message);
+        }
+    }
+
+    brah();
+    // brah but rejected
+    // another rejected
+
+If we don't use a try / catch, we can also attach a .catch method to the Promise
+generated by the async function (because all async function return Promises).
+However, the try catch way of handling rejections is more convenient and
+readable.
+
+    async function brah() {
+        const brah = await Promise.reject(new Error("brah but rejected"));
+        console.log(brah);
+        console.log("not executed");
+    }
+
+    brah().catch(err => console.error(err.message));
+    // brah but rejected
+
+
+MORE ON ASYNC & AWAIT
+-------------------------------------------------------------------------------
+
+AWAIT ACCEPTS THENABLES:
+
+    class Thenable {
+        constructor(str) {
+            this.str = str;
+        }
+
+        then(resolve) {
+            setTimeout(() => resolve(`Hello ${this.str}.`), 1000);
+        }
+    }
+
+    async function brah() {
+        const greeting = await new Thenable("brah");
+        console.log(greeting);
+    }
+
+    brah(); // Hello brah.
+
+
+CLASS METHODS CAN ALSO BE ASYNC
+
+    class MyClass {
+        async sayHelloBrah() {
+            console.log("Hello brah");
+            console.log("Now I will wait 1000ms for the next statement...")
+            const nextStatement = await new Promise(resolve => {
+                setTimeout(() => {
+                    resolve("hello again brah")
+                }, 1000);
+            });
+            console.log(nextStatement);
+            return "hello another time brah";
+        }
+    }
+
+    new MyClass()
+        .sayHelloBrah()
+        .then(console.log);
+        // Hello brah
+        // Now I will wait 1000ms for the next statement...
+        // hello again brah
+        // hello another time brah
+
+
+CALLING AN ASYNC FUNCTION FROM A NON-ASYNC FUNCTION:
+    In the event you need to do this, remember that an async function
+    immediately returns an unsettled Promise, so if you need to call an async
+    function inside of a non-async function you simply need to treat the
+    function call the same as you would treat a new Promise instantiation in a
+    context outside of an async function.
+
+    async function brah() {
+        console.log("1");
+        console.log("2");
+        await new Promise(res => {
+            setTimeout(() => {
+                res();
+            }, 1000);
+        })
+        return "4";
+    }
+
+    function notAsyncBrah() {
+        brah().then(console.log);
+    }
+
+    notAsyncBrah();
+    console.log("3 (global scope)");
+    // 1
+    // 2
+    // 3 (global scope)
+    // 4
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

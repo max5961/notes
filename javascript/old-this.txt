@@ -1,0 +1,353 @@
+-------------------------------------------------------------------------------
+THIS IN JAVASCRIPT
+-------------------------------------------------------------------------------
+A little brush up first function constructors.  NON-ARROW functions all have
+their own 'this' (sort of, more on this next paragraph) and can thus construct
+new objects with the 'new' keyword.  The 'new' keyword essentially returns a
+copy of the object prototype with its own unique 'this'.
+
+'this.someProperty = someValue;' within the function body is the almost the same
+thing as 'someFunction.prototype.someProperty = someValue;' outside of the
+function body.
+
+The difference is that within the function body, you are directly setting the
+prototype of the instance returned by the constructor function, whereas outside
+the function body you are setting the prototype directly and ALL instances
+created after setting the prototype outside the function body will inherit the
+same prototype properties.  Setting the prototype outside of the function body
+shares similarities to creating a static method because class members would
+share the same property.
+
+Long story short, all regular functions have a prototype (not a this) that can
+be set within the function body with 'this' and the 'new' keyword returns the
+prototype to the LHS.  Arrow function DO NOT have a prototype so none of this
+applies to them.
+
+    function BroDude(name) {
+        this.name = name;
+
+        // doesn't matter what we return if we use the 'new' keyword, it will
+        // return a new object with the prototype set to this functions
+        // prototype
+        return "brodude";
+    }
+    const broDude = new BroDude("bro");
+
+    // or without the name, it doesn't matter.  These do the exactly the same
+    // thing
+
+    function BroDude() {}
+    const broDude = new BroDude();
+    broDude.name = "bro";
+    console.log(broDude.name); // "bro"
+
+    // broDude is not callable in either case.  It is an object
+    broDude()
+
+ARROW FUNCTIONS inherit their 'this' from the surrounding lexical context in
+which they are DEFINED. Arrow functions CANNOT be constructors and they do not
+have a prototype property.
+
+NON-ARROW FUNCTIONS capture 'this' from the context in which they are called,
+which basically means that their 'this' belongs to the instance of the object
+which calls the function.
+
+    const obj = {
+        nums: [1, 2, 3],
+        doubleNums: function() {
+            const map = () => {
+                return this.nums.map(num => num * 2);
+            }
+            return map();
+        }
+    }
+
+    console.log(obj.doubleNums()); // [2, 4, 6]
+
+This example above works because the doubleNums property is an anonymous
+function but NOT an anonymous arrow function.  Because it is not an arrow
+function it captures the 'this' from the obj identifier when it is CALLED.  It
+is a minor difference but, when doubleNums is defined it has no 'this'.  When it
+is called it captures 'this' from the object which called it. Given that the
+doubleNums function has 'this', the 'map' arrow function now has a 'this'
+variable within its scope and can use it just like any other variable.
+
+Given that arrow functions can only access 'this' when it is available within
+the surrounding lexical context (within scope), arrow function treat 'this'
+almost like any other variable.
+
+    class Brodude {
+        constructor(name) {
+            this.name = name;
+        }
+
+        greet() {
+            console.log(this.name);
+        }
+
+        greetArrow = () => {
+            console.log(this.name);
+        }
+    }
+
+    const brodude = new Brodude("brodude");
+
+    // As expected, these both log 'brodude'
+    brodude.greet();
+    brodude.greetArrow();
+
+    const greet = brodude.greet.bind(brodude);
+    const greetArrow = brodude.greetArrow;
+
+    // These both log 'brodude' as well.
+    // However, the distinction is that we needed to explicitly 'bind' brodude to
+    // the brodude.greet method because once we assign it to the plain 'greet'
+    // variable, it won't be able to bind to anything without the .bind(brodude)
+    // piece like it was when it had the brodude instance calling it
+    greet();
+    greetArrow();
+
+    // Here we do the nearly the same thing as when we assigned brodude.greet to the
+    // plain 'greet' identifier, but this time we assigned it to a property on
+    // an object that contains a name variable.  Thus when greet is called on the
+    // otherBrodude object it gets bound to otherBrodude's 'this'
+    const otherBrodude = {
+        name: "other brodude",
+    }
+    otherBrodude.greet = brodude.greet;
+    otherBrodude.greet(); // logs 'other brodude' NOT 'brodude'
+
+    // But now lets assign the plain 'greet' variable to otherBrodude.greet.  It
+    // now logs 'brodude' instead of 'other brodude' because we assigned
+    // otherBrodude.greet to a variable which was 'bound' to another this.
+    otherBrodude.greet = greet;
+    otherBrodude.greet(); // logs 'brodude'
+
+    otherBrodude.greet = otherBrodude.greet.bind(otherBrodude);
+    otherBrodude.greet(); // still logs brodude, can't rebind
+
+
+THIS IN FUNCTIONS
+-------------------------------------------------------------------------------
+In standalone function 'this' is:
+    IN STRICT MODE:
+        'undefined'
+    IN NON-STRICT MODE:
+        refers to the global object such as the 'window' in browser runtimes
+
+'this' is different within different contexts in functions.  There is the
+'function object' context because all functions are objects...and there is the
+'calling' context.
+
+In 'FUNCTION OBJECT' context, 'this' refers to the function object.  It can be
+bound to by another function, but otherwise is a private variable.
+
+In 'CALLING' context, 'this' refers to the object which calls it, which means
+that this inherits the 'this' from whatever calls it.
+
+    Keep in mind that in strict mode, standalone functions always have an
+    'undefined' this, but in non-strict mode their 'this' will refer to the
+    global object such as 'window' in web-browsers because that is the god
+    object that calls everything.
+
+    obj.someFunction(); // someFunction inherits 'this' from obj
+    someStandaloneFunction(); // inherits 'this' from the global object
+
+
+FUNCTION PROTOTYPES
+-------------------------------------------------------------------------------
+Functions in JavaScript are considered FIRST CLASS OBJECTS which means that they
+can contain methods and properties.  However, these methods are bound to the
+prototype of the function.  The function itself is essentially a callable
+object.  The prototype is where all of the information is stored and the
+primary purpose of the prototype is in creating new instances of objects based
+on its prototype.
+
+As explained above...when an constructor function (any function besides an arrow
+function) is called with the new keyword is returns a new object that matches
+the prototype of the constructor function.  It doesn't return a 'copy' of the
+function...that would be pointless since the function itself is always passed by
+reference anyways (there is no need to copy the function itself)
+
+So, as explained above, functions don't actually have a this.  In the case of
+non-arrow functions they inherit 'this' from the object which calls it.  In the
+case of arrow functions, they can access 'this' from the lexical context of
+where the arrow function was defined... so the only other way to explicitly
+give a function its own 'this' is with the Function.prototype.bind method which
+is only available on non-arrow functions.
+
+If functions don't really have a this, then why can you do one of these:
+
+    function brodude(name) {this.name = name};
+
+You can do the above because in JavaScript, this.someProperty = someValue within
+the function body is the same thing as someFunction.prototype.someProperty =
+someValue outside of the function body....yes javascript fucking sucks
+
+
+FUNCTION.PROTOTYPE.BIND
+-------------------------------------------------------------------------------
+The Function.prototype.bind method RETURNS an entirely new function with that
+has a 'this' value bound to the passed in donor object.
+
+    const bro = {
+        name: "brodude",
+    }
+
+    function brodude() {
+        console.log(this.name);
+    }
+
+    const boundBrodude = brodude.bind(bro);
+    boundBrodude(); // 'brodude'
+    brodude(); // undefined
+
+
+FUNCTION.PROTOTYPE.CALL
+-------------------------------------------------------------------------------
+The Function.protoype.call method CALLS a function with the 'this' context from
+the passed in donor object.  Here is a FUCK YOU example that demonstrates this
+concept, but is horrible practice.
+
+    const bro = {
+        firstName: "bro",
+        logLastName: function() {
+            console.log(this.lastName);
+        }
+
+    }
+
+    const dude = {
+        lastName: "dude",
+        logFirstName: function() {
+            console.log(this.firstName);
+        }
+    }
+
+    bro.logLastName.call(dude); // 'dude'
+    dude.logFirstName.call(bro); // 'bro'
+
+
+WHY CAN ARROW FUNCTIONS CAPTURE THIS IN CLASSES (I SEE NO THIS BRAH)
+-------------------------------------------------------------------------------
+It helps to de-abstract away from the 'class' syntax to better understand why
+this happens.
+
+    function Brodude() {
+        // doesn't matter that this was before we set the name property
+        // all that matters is that the arrow function has the correct 'this'
+        // so that it can access 'this' when it is called
+        this.logName = () => {
+            console.log(this.name);
+        }
+
+        this.name = "brodude";
+    }
+
+    const brodude = new Brodude();
+    brodude.logName(); // logs 'brodude'
+
+'class' syntax is just an abstraction of the code we see above.  The example
+below does the same exact thing as above
+
+    class ClassBrodude {
+        constructor() {
+            this.name = "brodude";
+        }
+
+        logName = () => {
+            console.log(this.name);
+        }
+    }
+
+    const classbrodude = new ClassBrodude();
+    classbrodude.logName(); // logs 'brodude'
+
+
+CONSTRUCTOR FUNCTIONS & FACTORY FUNCTIONS
+-------------------------------------------------------------------------------
+There are a two other ways in javascript to create objects that aren't with the
+'class' syntax.  You should of course always use the 'class' syntax but for the
+sake of being thorough...
+
+CONSTRUCTOR FUNCTIONS:
+    These are literally just regular functions as explained in above sections.
+    When you set property in the constructor function body you are really
+    pulling one of these: FunctionName.prototype.someProperty = someValue;  You
+    can then use the 'new' keyword to return a new object built from the
+    function's protoype.  The new object is NOT a copy of the function (that
+    would make no sense), but an entirely new object with its own 'this'.
+
+        function Brodude({ name, age }) {
+            this.name = name;
+            this.age = age;
+
+            this.logName = function() {
+                console.log(this.name);
+            }
+
+            this.logAge = function() {
+                console.log(this.age);
+            }
+        }
+
+        const brodude = new Brodude({ name: "Brodude", age: 32 })
+        brodude.logName(); // 'Brodude'
+        brodude.logAge(); // 32
+
+FACTORY FUNCTIONS
+    These are also literally just regular functions (although they could be
+    arrow functions as well, which is unlike constructor functions) and the
+    caveat is that factory functions return an object.  In JavaScript when you
+    create an object with {} it is always an entirely new instance and has its
+    own 'this'.  This is different than pulling one of these: const obj = {};
+    const alias = obj; // alias is just a reference or 'alias' to obj.  Here is
+    the same code but in factory function syntax
+
+    function Brodude({ name, age }) {
+        return {
+            name: name,
+            age: age,
+            logName: function() {
+                console.log(this.name);
+            },
+            logAge: function() {
+                console.log(this.age);
+            }
+
+        }
+    }
+
+    // we no longer need the 'new' keyword since the Brodude function explicitly
+    // returns an new object
+    const brodude = Brodude({ name: "Brodude", age: 32 })
+    brodude.logName(); // 'Brodude'
+    brodude.logAge(); // 32
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

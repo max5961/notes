@@ -1,0 +1,70 @@
+What is a higher order function?
+A function that returns a function and/or uses a function as an argument
+
+What is 'onclick' from this snippet of code?  button.onclick = someCallbackFn
+It is a property of an HTMLButtonElement that has a type of (e: Event | undefined) => void; which is triggered by the JS Engine when a click Event on that button occurs
+
+Are all callbacks handlers?
+No, all handlers are callbacks, but not all callbacks are handlers.
+
+What is a 'handler' function?
+A callback which is used to 'handle' execution of code after some Event
+
+What is a Promise?
+A JS object which keep track of and handles the eventual success or failure of an asynchronous (or synchronous task).
+
+What are the three possible states a Promise can be in?
+Pending, fulfilled, rejected
+
+When a Promise resolves, what is the value stored? When a Promise rejects?
+Value of the Promise is: 'result' when resolved, 'reason' when rejected
+
+What are Thenables?
+User/Third-Party defined objects with a .then method that takes in an Executor.  If returned by a Promise, the JS Engine will wrap it in a Promise
+
+When a Promise is instantiated, does the executor run synchronously or asynchronously?
+Synchronously, even the res and rej handlers are executed synchronously. However, the .then, .catch, .finally methods are pushed to the task queue once encountered and are thus asynchronous.
+
+List the 6 Promise static methods:
+.all, .allSettled, .race, .any, .resolve, .reject
+
+Describe Promise.all
+All or nothing.  Accepts an array of Promises, resolves when all resolve, rejects as soon as one rejects
+
+Describe Promise.allSettled
+Accepts an array of Promises, resolves when all settle regardless of being fulfilled or rejected.  Result is an array of Promise states
+
+Describe Promise.race
+Accepts an array of Promises, resolves when the first Promise settles.  Result is the 'result' or 'reason' of the first to settle.
+
+Describe Promise.any
+Accepts an array of Promises.  Ignores rejected Promises and resolves when the first Promise resolves.
+
+In Promise.any, if all Promises reject, what kind of value is the 'reason' for the rejection.
+AggregateError, a special Error object that stores all Promise errors in an array in its error property
+
+Describe Promise.resolve
+same as: const resolvedPromise = new Promise(resolve => resolve(5));
+
+Describe Promise.reject
+same as: const rejectedPromise = new Promise((_, reject) => reject(new Error(5))
+
+Describe where the async and await keywords are used.
+When DECLARING a function.  Async OUTSIDE of the function body, await INSIDE of an explicitly async declared function body
+
+The 'async' keyword before a function means only that the function will always...
+Implicitly return a Promise, unless it already explicitly does so
+
+The 'await' keyword inside of an async function body does what?
+Pauses the execution of the function (essentially pushes the rest of the code block to microtask queue)
+
+The 'await' keyword should be used on Promise objects, but what does it do to non-Promise objects?
+It wraps them in a Promise.resolve(someNonPromiseValue);
+
+How are errors typically handled wth async / await?
+With a try / catch block.  Theres nothing stopping you from incorporating a catch method, but this goes against the benefits of async / await.
+
+How to call an async function within a NON-ASYNC function?
+All async functions return Promises, therefore you will treat the function call as a Promise and you will need to chain some combination of .then/catch/finally to the function call.
+
+

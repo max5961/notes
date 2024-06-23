@@ -1,0 +1,6 @@
+- for search term in pacman -Q, pacman -Qi search term
+- Use pacman -Q and grep to query installed packages that match a specific term,
+  and then awk to get just the packages first column and use that result to use
+  pacman -Qi to see the dependencies and specifics of each result
+for s in $(pacman -Q | grep 'wayland' | awk '{print $1}'); do; pacman -Qi "$s"; done;
+

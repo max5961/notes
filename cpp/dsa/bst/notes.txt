@@ -1,0 +1,72 @@
+ON CREATING PARAMETERS WHICH ACCEPT CONST POINTER REFERENCES TO NODE OBJECTS:
+-------------------------------------------------------------------------------
+During this implementation of a BST, I was trying to also get more comfortable
+with const qualifying pointers.  While I felt confident doing this, an issue I
+ran into was trying to pass in a const value Node pointer to the overloaded
+insert member function.  I did this because I wanted to signify that the Node I
+was passing in as an argument should not be modified by the overloaded insert
+function.  It was to my misunderstanding at the time that constness for an
+object was private to the function scope.  However, I was incorrect because that
+constness extends to the life of the Node, not just the private scope of the
+function.  The overloaded insert function mutates Node objects, and therefore
+the compiler would not allow passing a const qualified Node object into the
+overloaded insert member function.
+
+While it might be good practice to try to const qualify variables when possible,
+Binary Search Trees and data structures which rely on mutability are
+implementations where const qualifying variables has limited opportunities.  In
+the Node class for example, the 'value' member variable can be immutable, but
+the Node and the root (from the BST class) cannot be immutable due to the nature
+of BST's as a data structure depending on modifying the left and right pointers.
+I still chose to NOT make the 'value' variable immutable for ease of creating
+the remove function.
+
+ON PASSING POINTERS BY REFERENCE:
+-------------------------------------------------------------------------------
+In the insert member functions, it was not entirely necessary to pass the
+Node<T> * pointers by reference given our implementation.  This is because in
+the first insert function, we create a new Node<T> and then pass its pointer
+into the overloaded function.  If we didn't pass the Node<T> pointer, and
+instead only passed the value so we could create a new Node on the eventual
+insertion into the BST, then we would NEED to pass the root pointer by
+reference.  This is because pointers are variables too and when they are passed
+by value, they are stored in a new address despite pointing to the expected
+address.  When a pointer dynamically allocates memory with new / new[], it
+changes where it points to to a new location on the heap.  The original
+pointer doesn't reflect that change unless it is passed by reference.  In my
+implementation, I passed the root pointer by reference to remind me of how to
+pass a pointer by reference, not because I needed to. This ended up causing an
+issue with my preOrderDfs implementation because I was passing all my pointers
+by reference....
+
+In my preOrderDfs implementation, I tried to pass a reference to a Node<T>
+pointer to the const qualified preOrderDfs overload. I const qualified the
+preOrderDfs member functions because they are not intended to mutate the BST
+object.  Because I const qualified the preOrderDfs overload, passing a reference
+to the root pointer discarded the function's const qualifier.  This is because,
+const qualifying the function tries to bind the parameter to a const qualified
+variable, which ends up dropping the implicit const qualified variable.  To fix
+this, you can either pass the root pointer by value, or make sure to pass it as
+a const pointer reference.
+
+In the reverse function, I thought that I might have needed to pass the pointer
+by reference, but here you don't need to either.  I thought this because with
+all the use of the arrow operator its easy to forget what it actually does.  It
+dereferences the pointer, so it acts on the actual object it points to, the same
+as if it was written *p.left = temp;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

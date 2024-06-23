@@ -1,0 +1,134 @@
+Into to Regular Expressions
+https://tldp.org/LDP/abs/html/x17129.html
+-------------------------------------------------------------------------------
+An expression is a string of characters.  Those characters having an
+interpretation above and beyond their literal meaning are called metacharacters.
+A quote symbol, for example, may denote speech by a perso, ditto, or a
+meta-meaning for the symbols that follow.
+
+Regular Expressions are sets of characters and/or metacharacters that match
+(or specify) patterns.
+
+A Regular Expression contains one or more of the following:
+    - a character set
+        - these are characters that retain their literal meaning
+        - the simplest form of a regex consists only of a character set
+    - an anchor
+        - an anchor designates the position in the line of text that the RE is
+        to match
+        - ^ and $ are anchors
+    - modifiers
+        - these expand or narrow the range of text the RE is to match
+        - modifers include: asterisks, brackets, and backslashes
+
+- The main uses for REs are text searches and string manipulation
+- An RE matches a single char or a set of chars
+
+### MODIFIERS
+    *
+        - matches any number of repeats of the character string or RE preceding
+        it, including zero instances
+        "123*" matches:
+            123123123 (repeating char set preceding *)
+            12333333333 (repeating last char before *)
+            12333333333123 (repeating last char before * AND repeating char set
+            preceding *)
+
+    .
+        - matches any one character, except for a newline
+        "123." matches:
+            123a from 123anychar
+            1234 from 123456
+
+    ^
+        - asserts the position to start searching from at the beginning of the
+        line
+        - sometimes depending on context, negates the meaning of a set of chars
+        in a RE
+        "^123" matches:
+            123 from 12345
+        "^123" does NOT match:
+            456123
+
+    $
+        - placed at the end of a refex and matches the end of a line
+        "123$" matches:
+            123 from 456123
+
+    []
+        - brackets enclose a set of chars to match in a single RE
+        "[a-z]" matches:
+            "hello world" from "hello world"
+        "[hwl]" matches:
+            "hllwl" from "hello world"
+        "[hwl ]" matches:
+            "hellwl " from "hello world"
+
+        [a-z] matches any lowercase chars in the range of a-z
+        [A-Z] matches any uppercase chars in the range of A-Z
+        [A-Za-z] matches any letter char
+        [0-9] matches any numberical chars 0-9
+
+
+        - inside of brackets, the caret ^ negates the meaning of the following
+        RE.  This is similar to ! in a different context
+            [^b-d] matches any character EXCEPT those in the range of b-d
+
+        - combined sequence of chars match common word problems
+            [Yy][Ee][Ss] matches yes, Yes, YES, yEs, etc.....
+            [0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9][0-9] match any Social Security
+            Number
+
+    \
+        - backslash escapes a special character which means that char gets
+        interpreted literally and is therefore no longer special
+        - "\$" revers $ back to its original meaning since $ has special meaning
+        in the context of regex (end of line)
+
+    \<...\>
+        - escaped "angle brackets" <> mark work boundaries
+        - NOTE: this is supported in GNU grep but not all regex
+            - if this isn't working its likely that "\bword" will
+            - \b stands for word boundary
+        - PCRE (Perl Compatible Regular Expressions do not support it for example)
+        "\<the\>" matches the word "the" but not the words them, there, other...
+
+    ?
+        - matches zero or one of the previous RE
+        - generally used for matching single chars
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

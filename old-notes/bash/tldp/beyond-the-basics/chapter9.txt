@@ -1,0 +1,303 @@
+Chapter 9 - Another Look at Variables
+https://tldp.org/LDP/abs/html/variables2.html
+-------------------------------------------------------------------------------
+### INTERNAL VARIABLES
+# BUILTIN VARIABLES
+    $BASH
+        - the path to the bash binary itself
+        echo $BASH
+        /bin/bash
+    $BASH_ENV
+        - an environment variable pointing to a Bash startup file to be read
+        when a script is invoked
+    $BASH_SUBSHELL
+        - a variable indicating the subshell level
+    $BASHPID
+        - process ID of the current instance of Bash (not the same as the $$
+        variable but often gives the same result)
+    $BASH_VERSINFO[n]
+        - a 6-element array containing version information about the installed
+        release of bash
+    $BASH_VERSION
+        - the version of bash installed on the system
+        - less detailed than $BASH_VERSINFO[n]
+    $CDPATH
+        - colon-separated list of search paths available to the cd command
+    $DIRSTACK
+        - the top value in the directory stack
+    $EDITOR
+        - the default editor invoked by a script
+    $EUID
+        - "effective" user ID number
+    $FUNCNAME
+        - name of the current function
+        #!/bin/bash
+        xyz23 () {
+            echo "$FUNCNAME now executing."  # xyz23 now executing.
+        }
+        xyz23
+        echo "FUNCNAME = $FUNCNAME"  # FUNCNAME =
+                                     # Null value outside of a function
+    $GLOBIGNORE
+        - a list of filename patterns to be excluded from matching
+    $GROUPS
+        - groups current user belongs to
+    $HOME
+        - home directory of the user (usually /home/username)
+    $HOSTNAME
+        - the gethostname() function sets the Bash internal variable $HOSTNAME
+    $HOSTTYPE
+        - identifies system hardware
+    $IFS
+        - internal field separator
+        - determines how bash recognizes fields, or word boundaries, when it
+        interprets charcter string
+        - $IFS defaults to whitespace, but may be changed
+    $IGNOREEOF
+        - ignore EOF: how many end-of-files (control-D) the shell will ignore
+        before logging out
+    $LC_COLLATE
+        - controls collation order in filename expansion and pattern matching
+    $LC_CTYPE
+        - controls character interpretation in globbing and file matching
+    $LINENO
+        - the line number of the shell script in which this variable appeears
+        - used mostly for debugging purposes
+    $MACHTYPE
+        - machine type
+        - identifies the system hardware
+    $OLDPWD
+        - previous directory you were in
+    $OSTYPE
+        - operating system type
+    $PATH
+        - path to binaries, usually /usr/bin/, /usr/X11R6/bin/, /usr/local/bin
+    $PIPESTATUS
+        - array variable holding exit status(es) of last executed foreground
+        pipe
+    $PPID
+        - the parent process ID of a process
+    $PROMPT_COMMAND
+        - a variable holding a command to be executed just before the primary
+        prompt
+    $PS1
+        - the main prompt, seen at the command line
+    $PS2
+        - the secondary prompt, seen when additional input is expected
+        - displayed is ">"
+    $PS3
+        - the tertiary prompt, display in a select loop
+    $PS4
+        - the quartenary prompt, shown at the beginning of each line of output
+        when invoking a script with the -x [verbose trace] option
+        - displays as "+"
+    $PWD
+        - working directory
+        - this is the analog to the pwd builtin command
+    $REPLY
+        - the default value when a variable is not supplied to read
+    $SECONDS
+        - the number of seconds the script has been running
+    $SHELLOPTS
+        - the list of enabled shell options, a readonly variable
+    $SHLVL
+        - shell level, how deeply bash is nested
+        - if, at the command-line, $SHLVL is 1, then in a script it will
+        increment to 2
+    $TIMOUT
+        - if the $TMOUT environment variable is set to a non-zero value time,
+        then the shell prompt will time out after $time seconds and cause a
+        logout
+        - as of version 2.05b Bash you can now use $TMOUT in a script with read
+
+### POSITIONAL PARAMETERS
+
+    $0, $1, $2, etc
+        - positional parameters passed from command line to script, function, or
+        set to a variable
+    $#
+        - number of command-line arguments or positional parameters
+    $*
+        - all of the positoinal parameters, seen as a single word
+    $@
+        - same as $*, but each parameter is a quoted string
+    $!
+        - PID (process ID) of last job run in the background
+    $_
+        - special ariable set to final argument of previous command executed
+    $?
+        - exit status of a command, function, or the script itself
+    $$
+        - PID (process ID) of the script itself
+
+### TYPING VARIABLES: DECLARE OR TYPESET
+The declare or typeset builtins, which are exact synonyms, permit modifying the
+properties of variables.  This is a very weak form of the typing available in
+certain programming languages.  The declare command is specific to version 2 or
+later of Bash
+
+    # DECLARE/TYPESET OPTIONS
+    -r (readonly)
+        # this is the equivalent of a "const" type qualifier
+        # an attempt to change the value of a readonly variable fails with an
+        # error message
+        # example
+        declare -r var1=1
+        (( var1++ )) # x.sh: line 4: var1: readonly variable
+
+    -i
+        declare -i number
+        # the script will treat subsequent occurs of as an integer
+        number=3
+        number=three
+        echo "$number"
+        # outputs 0 because it tries to evaluate the string "three" as an
+        # integer
+
+        # certain arithmetic operations are permitted for declared integers vars
+        # without the need for expr or let
+        n=6/3
+        # n = 6/3
+        declare -i n
+        n=6/3
+        # n = 2
+
+    -a
+        declare -a indices
+        # declares the variable indices to be treated as an array
+
+    -f
+        # list all previously defined functions in the script
+        declare -f
+
+        declare -f function_name
+        # list just the function named
+
+    -x
+        declare -x var3
+        declare -x var3=373
+        # $var3 is declared as available for exporting outside the environment
+        # of the script itself
+
+
+    - declare can be helpful in identifying variables, environmental or
+    otherwise
+    declare | grep $HOME
+    HOME=/home/bozo
+
+### GENERATE RANDOM INTEGER
+$RANDOM is an internal Bash function that returns a psuedorandom integer in the
+range of 0-32767.  $RANDOM should NOT be used to generate an encryption key
+
+    #!/bin/bash
+    declare -ri MAXCOUNT=10
+    declare -i count=1
+    declare -i number
+
+    echo "$MAXCOUNT random numbers:"
+    echo "-------------------------"
+    while ((count < MAXCOUNT)); do
+        number=$RANDOM
+        echo $number
+        ((count++))
+    done
+    echo "-------------------------"
+
+    #!/bin/bash
+    # get a random number greater than 200 and less than 500
+    declare -ri lower_bound=200
+    declare -ri upper_bound=500
+    declare -i number=0
+    # use (( ... )) because it supports <, >, etc... operators
+    # [[ ]] supports <, >, etc... operators for arithmetic
+    # [[ ]] supports <, etc... but for string comparison
+    # could also use [[ ... ]] with -lt and -gt but this is cleaner
+    while ((number < lower_bound || number > upper_bound)); do
+        number=$RANDOM
+        let "number %= $upper_bound"
+    done
+    echo $number
+
+    #!/bin/bash
+    # pick random elements of an array representing a suite of cards
+    declare -ar suites=({2..10} "jack" "queen" "king" "ace")
+    declare -i number=0
+    for num in {0..10}; do
+        number=$RANDOM
+        let "number %= ${#suites[@]}"
+        item=${suites[$number]}
+        echo $item
+    done
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

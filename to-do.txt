@@ -1,0 +1,31 @@
+JavaScript
+    - Function.prototype.apply
+    - More about currying and lexical scope
+    - ...args
+    - more in depth on object destructuring and creating objects without :
+    - first class objects and how functions are first class objects
+
+TypeScript
+    - everything
+    - extends keyword, OOP
+    - Practical Advanced TypeScript: Hands-On Learning and Advanced Concepts
+
+Lua
+    - understand basics more
+        - tables, looping, arrays, nil, etc...
+    - how to create a vim plugin
+
+React
+    - state updates continue execution of function component body
+    - Class based components
+
+Bash
+    - arrays, keywords, symbols, conditionals ( [ ], vs [[ ]] vs (( )) )
+    - array positional parameters vs cli arg parameters
+        - array positional params are 0-based indexed, whereas cli args are
+          1-based indexed
+
+Node:
+    - 4 ways to child process: (exec, execFile, spawn, fork)
+    - EventEmitter
+    - Licenses (MIT, ISC, UNLICENSED...)

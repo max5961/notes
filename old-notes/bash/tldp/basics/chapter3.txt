@@ -1,0 +1,263 @@
+Chapter 3 - Special Characters
+https://tldp.org/LDP/abs/html/special-chars.html
+-------------------------------------------------------------------------------
+    Comments [#]
+        - lines beginning with a # (with the exception of #!) are comments and
+        will not be executed
+        - comments may follow whitespace at the beginning of a line
+        - comments may occur following the end of a command
+
+    Command Separator [;]
+        - permits putting two or more commands on the same line
+            echo hello; echo there
+
+    Terminator [;;]
+        - used in a case options
+            case "$var" in
+                abc) echo "\$var = abc" ;;
+                xyz) echo "\$var = xyz" ;;
+            esac
+
+    Dot Command [. or ..]
+        - a filename with a leading dot means a "hidden file" (dotfile)
+        - the plain ls command will not show hidden files
+
+        - when working with directory names:
+            - a SINGLE dot represents the current working directory
+            - TWO dot s represent the parent directory
+
+        - the dot often appears as the destination dir of a file movement command
+            cp /home/bozo/path/to/dir/* .
+
+    Partial Quoting vs Full Quoting ["" or '']
+        - partial quoting = double quotes
+            - preserves MOST special chars within the string from interpretation
+        - full quoting = single quotes
+            - preseres ALL special chars within the string from interpretation
+
+        - full quoting (single quotes) are therefore a stronger form of quoting
+        than double quotes....however you would want to use partial quoting most
+        of the time.  For example, when referencing a variable, if you full quote
+        it, the $ char is read literally and the variable will no longer be
+        referenced. The string will be interpreted in its literal sense.
+
+    Comma Separator [,]
+        - links together a series of arithmetic operations
+        - ALL operations are evaluated.  However, only the LAST is returned
+            let "t2 = ((a = 9, 15 / 3))" # t2 = 15 / 3
+
+    Escape [\ backslash]
+        - escapes the proceeding character
+
+    Filename Path Separator [/ forward slash]
+        - also the division operator
+        - in the context of filepaths path/to/file
+
+    Null Command [: colon]
+        - a do-nothing operation
+        - considered a synonym for the shell builtin "true"
+        - : itself is a bash builtin and has an exit status of true (0)
+
+        # endless loop example
+        while :
+            do
+                operation-1
+                operation-2
+            done
+
+        - also serves as a field separator in /etc/passwd and the $PATH variable
+
+    Bang [!]
+        - reverses or negates the sense of a test or exit status
+        != (not equal)
+
+    Wild Card [*]
+        - matches every filename in a given directory
+
+    Arithmetic Operator [*]
+        - denotes multiplication in the context of arithmetic operations
+
+    Test Operator [?]
+        - indicates a test for a certain condition
+        - in the "double-parentheses construct", ? can serve as a ternary operator
+        (( var0 = var1<98?9:21 ))
+                         ^ ^
+
+    Variable Substitution [$]
+        - a $ prefixing a variable name indicates the "value" the variable holds
+
+    End of Line [$]
+        - in a regex, a $ addresses the end of a line of text
+
+    Exit Status Variable [$?]
+        - holds the exit satus of a command, function, or of the script itself
+
+    Proccess ID Variable [$$]
+        - holds the process ID of the script in which it appears
+
+    Positional Parameters [$@ or $*]
+        - $*
+            - all of the positional parameters seen as a single word
+            - "$*" must be quoted
+        - $@
+            - same as $* but each parameter is a quoted string
+            - "$@" must also be quoted, just like "$*"
+
+    Parentheses [()]
+        - Command Group
+            - a listing of commands with parentheses starts a "subshell"
+            a=123
+            ( a=456 )
+            echo "a = $a" # outputs: a = 123
+            # the a within parentheses acts as a local variable
+
+        - Array Initialization
+            - separated by spaces
+            my_array=(elem1 elem2 elem3)
+
+    Brace Expansion [{}]
+        - comma separated values with no spaces
+            cat {file1,file2,file3} > combined_file
+
+        - Extended Brace Expansion {a..z}
+            # initialize an array, using extended brace expansion
+            base64_charset= ( {A..Z} {a..z} {0..9} + / = )
+
+    Block of Code [{}]
+        - also referred to as an "inline group"
+        - the variables inside of a code block remain visible to the remainder
+        of the script.  This differs from a command group with parentheses (see
+        above)
+
+        #!/bin/bash
+        # reading lines in /etc/fstab
+        File=/etc/fstab
+        {
+        read line1
+        } < $File
+        echo "First line in $File is:"
+        echo "$line1"
+        exit 0
+
+    Placeholder For Text [{}]
+
+    Test [brackets]
+
+        - [] single bracket
+            - test an expression between []
+            - needs whitespace around the opening and closing brackets
+            - supports base file, string, and arithmetic tests
+
+        - [[]] nested brackets
+            - test expression between [[]]
+            - just like single bracket tests, need whitespace around the opening and
+            closing brackets
+            - more flexible than single bracket test
+            - supports more advanced string operations like pattern matching:
+                ==, !=, =~
+
+        - to test whether or not a command ran successfully:
+            # no brackets are used to test exit status of a command
+            if command; then
+
+    Array Element (index) [[index]]
+        - bash: starting index = 0
+        - zsh: starting index = 1
+
+    Integer Expansion [(()) nested parentheses]
+        - also referred to as the "double-parentheses construct"
+        - permits arithmetic expansion and evaluation
+        a=$(( 5 + 3 )) # a = 8
+
+    Redirection [ > &> >& >> < <>]
+        scriptname >filename
+            - redirects output of script to filename
+        command &>filename
+            - redirects both the stdout and the stderr of a command to filename
+        command >&2
+            - redirections stdout of command to stderr
+        scriptname >>filename
+            - appends the output of scriptname to filename
+        [i]<>filename
+            - opens the filename for reading and writing, assings file
+            descriptor i to it
+        Process Substitution
+            (command)>
+            <(command)
+        << and <<<
+            - redirect the output of a command block into the stdin of a
+            program or command
+        <,>
+            - ASCII comparison
+            veg1=carrots
+            veg2=tomatoes
+            if [[ "$veg1" < "$veg2" ]]; then
+                echo "$veg1 does indeed predede $veg2 in the dictionary"
+                echo -n "but this doesn't actually imply anything"
+            else
+                echo "What kind of dictionary are you using?!"
+            fi
+
+    Pipe [|]
+        - passes the output (stdout) of a previous command to the input (stdin)
+        of the next one, or to the shell
+        - this is method of chaining commands together
+        # merge and sort all ".lst" files, then delete duplicate lines
+        cat *.lst | sort | uniq
+        # find all instances of "word" in file1.txt and file2.txt
+        cat file1.txt file2.txt | grep word
+
+    Force Redirection >|
+        - forcibly overwrite a file
+
+    Logical OR operator ||
+    Logical AND operator &&
+
+    Run job in background &
+        - a command followed by an & will run in the background
+        - within a script, commands, and even loops may run in the background
+
+    Previous working directory [cd -]
+
+    Equals Assignment Operator [=]
+
+    Modulo [%]
+        - remainder of a division arithmetic operation
+
+    Home Directory [~]
+
+    Current Working Directory [~+]
+
+    Previous Working Directory [~- ]
+
+    Regex Match [=~]
+
+    Whitespace
+        - functions as a separator between commands and/or variables
+        - can be either spaces, tabs, blank lines, or any combination therof
+        - in some contexts, whitespace is not permitted (variable assignment)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

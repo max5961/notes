@@ -1,0 +1,42 @@
+@import "./reset.css";
+
+html {
+    height: 100%;
+}
+
+body {
+    display: grid;
+}
+
+#root {
+    display: grid;
+}
+
+#app {
+    background-color: lightslategrey;
+    display: grid;
+}
+
+.one {
+    background-color: lightgreen;
+}
+
+.two {
+    background-color: lightpink;
+}
+
+.three {
+    background-color: lightblue;
+}
+
+.four {
+    background-color: lightcoral;
+}
+.child {
+    // height: 50px;
+}
+
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+}

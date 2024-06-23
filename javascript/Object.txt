@@ -1,0 +1,277 @@
+WHAT IS A PROTOTYPE
+-------------------------------------------------------------------------------
+All objects in JavaScript have a prototype. The prototype is essentially an
+entirely separate object that can be accessed through the __proto__ property, or
+through the Object.getPrototypeOf method. While it is a separate object, the
+prototype is intrinsically related to to the object it serves.  When a method is
+called or a variable is accessed from some object, JavaScript will first look
+through the object properties to see if it is there. If it is not, it will check
+the prototype of the object to see if it has the variable/method there.  If not,
+it will check the prototype of the prototype UNTIL the prototype is null.  This
+is what is called the prototype chain.  The prototype chain always ends with a
+null object.
+
+
+    const obj = {};
+
+The prototype of the 'obj' in the example above is: '{}'
+The prototype of the prototype of 'obj' is null.
+
+The prototype chain in the example above is about as deep as you will usually
+get in JavaScript and its not necessary with modern ES6 abstractions to always
+be consciously thinking about it.  However, here is an example demonstrating a
+deeply nested prototype chain.
+
+    let count = 0;
+    let obj = {};
+
+    while (count < 3) {
+        obj = Object.create(obj);
+        obj[count] = count;
+        ++count;
+    }
+
+    do {
+        console.log(obj);
+        obj = Object.getPrototypeOf(obj);
+    } while (obj);
+
+The do while loop ends up logging:
+    { '2': 2 }
+    { '1': 1 }
+    { '0': 0 }
+    {}
+    [Object: null prototype] {}
+
+This is because Object.create creates a new object and utilizes a separate
+object to be used as the new object's prototype.
+
+In the example, we start with 'obj' which has a single prototype. Then we
+essentially continue to add another shell or layer onto 'obj' with each new
+Object.create call.
+
+What if we used Object.assign instead of Object.create?  The result would only
+be:
+
+    { '0': 0, '1': 1, '2': 2 }
+    [Object: null prototype] {}
+
+This is because Object.assign copies all keys from one or more source objects to
+a target object.  It doesn't alter the prototype chain, only copies properties.
+In our example, if we use Object.assign instead of Object.create, the depth of
+the prototype chain will never actually increase!
+
+In the example above with Object.create, lets say we did not execute the
+do-while loop to unravel 'obj'.  Even though the top level of obj only shows
+{ '2' : 2 }, we could still access the '0' property because of the way
+JavaScript searches for properties in the prototype chain.
+
+    console.log(obj[1]) // still logs 1
+
+
+OBJECT.PROTOTYPE.ASSIGN
+-------------------------------------------------------------------------------
+Copies all enumerable properties from one or more source objects to a target
+object.  Object.assign can be helpful for React as it allows you to easily
+create a (1 level deep) copy of an object (although the ...spread syntax is
+still less verbose);
+
+    Object.assign(source, target);
+
+It returns the a reference to the source object, which makes it easy to create a
+new Object like this:
+
+    const obj = Object.assign({}, someTargetObject);
+
+But you can also do this of course:
+
+    const s1 = {
+        bro: "bro",
+    }
+
+    const s2 = {
+        dude: "dude",
+    }
+
+    const target = {};
+    Object.assign(target, s1, s2);
+    console.log(target); // { bro: 'bro', dude: 'dude' }
+
+
+OBJECT.PROTOTYPE.CREATE
+-------------------------------------------------------------------------------
+Object.create creates a new object and assigns the new object's prototype to
+some source object's prototype.  It returns the new object.  In this way,
+Object.create can make deeply nested prototype chains, whereas Object.assign is
+flat in nature (as demonstrated in the example above a couple sections)
+
+    const obj =  Object.create(someSourceObj);
+
+Object.create can take up to two arguments.  The first arg is the prototype
+object and the second is a properties object.  Only the first arg is required.
+
+    const obj = Object.create(protoObj, propertiesObj);
+
+Object.create returns a reference to the object it creates
+
+
+OBJECT.PROTOTYPE.GETPROTOTYPEOF
+-------------------------------------------------------------------------------
+Object.getPrototypeOf does the same essentially the same thing as accessing an
+object's __proto__ property.  Object.getPrototypeOf returns a reference to the
+object's prototype
+
+    const obj = {};
+
+    // BOTH OF THESE DO THE SAME THING!
+    console.log(Object.getPrototypeOf(obj));
+    console.log(obj.__proto__);
+
+
+OBJECT.SETPROTOTYPEOF
+-------------------------------------------------------------------------------
+Object.setPrototypeOf sets the prototype of a source object to a target object.
+While Object.create and Object.setPrototypeOf both set the prototype of some
+object, Object.setPrototypeOf doesn't increase the depth of the prototype chain,
+nor does it create new objects.  It modifies the prototype of an existing
+object and returns a reference of the modified object.
+
+Object.setPrototypeOf takes in two arguments (the target and source objects).
+
+    const source = {
+        name: "brodude",
+        logName() {
+            console.log(this.name);
+        }
+    }
+
+    const target = {};
+    Object.setPrototypeOf(target, source);
+
+    target.logName(); // name
+
+
+OBJECT.PROTOTYPE.CALL / BIND / APPLY
+-------------------------------------------------------------------------------
+These can only be used on objects which are Functions!!!
+
+    // THIS DOESN'T WORK!!!
+    // 'obj.bind is not a function'
+    obj.bind(otherObj);
+
+
+OBJECT.PROTOTYPE.KEYS
+-------------------------------------------------------------------------------
+It would be advisable to do with with an object which has compatible types
+(unlike this one which has a Function), but for demonstration purposes.
+
+    const bro = {
+        name: "bro",
+        logName() {
+            console.log(this.name);
+        }
+    }
+
+    console.log(Object.keys(bro)); // logs [ 'name', 'logName' ]
+
+
+OBJECT.PROTOTYPE.HASOWNPROPERTY
+-------------------------------------------------------------------------------
+Unlike in the other Object.prototype methods, this method is not a static
+method.  It is called directly on the object.  It returns a boolean if the
+passed in string is a property in the object which calls it.
+
+    logName() {
+        console.log(this.name);
+    }
+
+    console.log(bro.hasOwnProperty("name")); // true
+    console.log(bro.hasOwnProperty("nope")); // false
+
+
+OBJECT.PROTOTYPE.ENTRIES
+-------------------------------------------------------------------------------
+Similar to Object.keys but returns an array of key-value pair arrays instead of
+just an array of the keys.  Just like in Object.keys...probably not the best
+idea to perform this on an object with functions, but including for
+demonstration purposes.
+
+    const bro = {
+        name: "bro",
+        logName() {
+            console.log(this.name);
+        }
+    }
+
+    console.log(Object.entries(bro));
+
+A more practical application:
+
+    const bro = {
+        a: "a",
+        b: "b",
+        c: "c",
+    }
+
+    // could be considered a little less verbose than use Object.keys and
+    // then needing to do console.log(bro[k])
+    for (const [k, v] of Object.entries(bro)) {
+        console.log(v);
+    }
+
+
+OBJECT.PROTOTYPE.FREEZE / ISFROZEN
+-------------------------------------------------------------------------------
+Object.freeze makes an object immutable.  Object.isFrozen checks if an object is
+frozen.
+
+    const bro = {
+        a: "a",
+        b: "b",
+        c: "c",
+    }
+
+    Object.freeze(bro);
+    console.log(Object.isFrozen(bro)); // logs true
+
+    for (const k of Object.keys(bro)) {
+        // THIS WON'T MODIFY 'bro', OBJECT.FREEZE MADE IT IMMUTABLE!!!
+        bro[k] = "MOD";
+    }
+
+    console.log(bro); // still logs { a: 'a', b: 'b', c: 'c' }
+
+
+OBJECT.PROTOTYPE.SEAL / ISSEALED
+-------------------------------------------------------------------------------
+Object.seal prevents new properties from being added to an object and also
+prevents properties from being deleted.  It does not however prevent writeable
+properties from being modified.
+
+Object.isSealed checks to see if an object is sealed.
+
+    const bro = {
+        a: "a",
+        b: "b",
+        c: "c",
+    }
+
+    Object.seal(bro);
+    console.log(Object.isSealed(bro)); // true
+
+    for (const k of Object.keys(bro)) {
+        // THIS WILL MODIFY 'bro' THE KEYS ARE NOT IMMUTABLE
+        bro[k] = "MOD";
+    }
+
+    bro.d = "MOD"; // DOESN'T GET ADDED, 'bro' IS SEALED!!!
+    delete bro.c;  // DOESN'T GET DELETED, 'bro' IS SEALED!!!
+
+    console.log(bro); // logs { a: 'MOD', b: 'MOD', c: 'MOD' }
+
+
+
+
+
+
+

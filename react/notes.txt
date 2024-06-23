@@ -1,0 +1,674 @@
+-------------------------------------------------------------------------------
+USESTATE
+-------------------------------------------------------------------------------
+The setState function returned from the useState hook accepts either a new value
+or a callback with the previous value that returns a new value
+
+    // simply pass a new value
+    setState(newValue);
+    // use callback to get new value
+    setState(prevValue => prevValue * 1000000);
+
+If the state depends on the previous value then using the callback form could be
+safer as it makes sure the computed new value is calculated from the previous
+value.
+
+The callback form ensures that the state update is always based on the msot
+current state.  This could be relevant in async operations where the async code
+pushed to the task queue is computed with an old state and then is possibly
+executed after the state has been updated while in the task queue.  In this
+case, the callback would be updating "stale" state because of how function
+closure accesses variables from its lexical scope (which includes local and
+visible global).
+
+The callback form ensures that the most recent state is used as a reference to
+update the state because the function at the time of execution would contain the
+latest state update.
+
+
+-------------------------------------------------------------------------------
+CUSTOM HOOKS
+-------------------------------------------------------------------------------
+In React, hooks are a way to subscribe to state from another function that
+handles the logic flow of setting the state that will be used in the component
+which called the hook.  In this way, hooks are a way to "hook" into some
+encapsulated logic which is just another way of saying to abstract away some of
+the logic flow.
+
+Hooks can return anything to the Component from which they are ran.  This could
+be a handler function, or some state variable for example.  You return only what
+you need to insert into the JSX markup to properly render the component.
+
+Regardless of what the hook returns, any time one of the state variables within
+the hook is updated, this triggers a re-render of the component the same way
+declaring the state within the component would.  (Of course it would...useState
+is a hook after all).
+
+While I stated that React hooks are a way to subscribe to STATE from another
+function, this is only how React hooks are intended to be used.  Hooks can also
+be thought of simply as functions.  The distinction is that in React, hooks are
+designed to handle reusable and/or complex state logic, while functions should
+handle pure i/o logic.
+
+Custom React hooks are also designed to be used with the built in React hooks
+such as useState, useEffect, useReducer, etc...
+
+You can use custom hooks inside of hooks of course, so that opens the
+opportunity to use custom hooks as the building blocks of a lot of your logic
+flow.  Just as with regular functions, you can build general purpose hooks that
+can be used directly within your components, or you can use them to build a
+larger specific purpose hook.
+
+-------------------------------------------------------------------------------
+TRIGGERING RE-RENDERS IN DETAIL
+-------------------------------------------------------------------------------
+- React renders top-down, meaning if a parent and child component both update
+  state in response to the same event, the parent will re-render first.
+- How does useEffect effect the order or renders?
+    - Allows you to chain state updates if necessary.  When one of the state
+      objects in the dependency array updates, the useEffect callback will be
+      called and you could then trigger a state update within that callback,
+      essentially chaining together state updates...but if you need to do this,
+      its probably better to just use useReducer
+
+-------------------------------------------------------------------------------
+useReducer
+-------------------------------------------------------------------------------
+- Benefits of using useReducer to synchronize multiple state updates together
+  such that the update is batched into a single render
+- While useReducer batches state updates into a single render, this effect can
+  be had with useState so long as the state value is a compound data type such
+  as an object.  The takeway is that if there are two or more state values which
+  depend on eachother, they should be bundled into a single state object rather
+  than multiple separate state objects.
+
+-------------------------------------------------------------------------------
+useEffect
+-------------------------------------------------------------------------------
+- Explain dependencies array
+- Explain empty dependencies array
+- Explain how to perform an onmount and ondetach callback with useEffect and an
+  empty dependencies array
+
+-------------------------------------------------------------------------------
+PROPS
+-------------------------------------------------------------------------------
+- Explain what are props and go into detail about how they are passed to
+  components and the syntax that is used typically (object destructuring)
+- Explain default props
+
+Props are data and event handlers that are passed into a React component.  When
+a prop is passed in as an argument to a Component, the component bundles all of
+the props into a single object.  The parameter list does not need to, but
+usually uses object destructuring syntax to destructure the object within the
+parameter list.  You could just as easily destructure within the function body
+as well.
+
+Props are about data and handler flow throughout the component tree.  Props can
+only be passed unidirectionally from a parent component to a child component.
+If a prop must be shared by sibling components, then the data must be funnelled
+through their common parent component.
+
+-------------------------------------------------------------------------------
+RERENDERS IN MORE DEPTH
+-------------------------------------------------------------------------------
+Every re-render in React starts with a state change.  It is the ONLY trigger in
+React for a component to re-render.  This might sound misleading, because when a
+components props or context changes, that comes with a re-render as well.
+However, for a component's props or context to change, a state variable must
+have been changed so the first sentence holds true. When a component re-renders
+IT ALSO RE-RENDERS ALL OF ITS DESCENDANTS regardless of state or no state
+changes.
+
+DISTINCTION 1:
+    A state change only affects the component that owns the state + any
+    DESCENDENTS it may have (if any).  State changes do not trigger re-renders
+    'up' the component tree.  We know that a state change within a child
+    component cannot possibly affect the parent component because state cannot
+    flow UP in a React application.
+
+DISTINCTION 2:
+    A state change to a parent component re-renders ALL of its descendents
+    regardless of if the descendent contains props that were modified by the
+    state change to the parent.  A component does NOT re-render because its
+    props changed.  It re-renders because one of its parent components state
+    changed.
+
+    Imagine we define a global variable x and use setTimeout within global scope
+    to change x to a different value after 1 second.  Then we have a component
+    that passes x as an argument to one of its props.  This isn't how the React
+    ecosystem works at all...so the example hardly even makes sense, but it of
+    course doesn't trigger a re-render when the setTimeout cb reassigns the
+    global variable even though we technically changed the value of the prop.
+    However, if we change the state of the parent component, then it will
+    re-render and use the new global variable. (again, for demonstration, this
+    example goes against the idea of state management in React)
+
+    What if a state change has no effect on a descendent component?  Why does
+    React still re-render it?  Its hard for React to know with 100% certainty
+    whether or not a component depends directly, or indirectly on a state
+    variable.  React chooses to err on the side of caution and use 'too many'
+    renders rather than not enough.
+
+EXAMPLE TO GO ALONG WITH THE ABOVE:
+
+    export default function App() {
+        return (
+            <>
+                <Counter />
+                <footer>
+                    <p>Copyright Bigfoot Inc</p>
+                </footer>
+            </>
+        );
+    }
+
+    function Counter(): React.ReactNode {
+        const [count, setCount] = useState<number>(0);
+
+        console.log("Counter render");
+
+        return (
+            <main>
+                <BigCountNumber count={count} />
+                <button onClick={() => setCount(count + 1)}>Increment</button>
+                <Decoration />
+            </main>
+        );
+    }
+
+    function BigCountNumber({ count }: { count: number }): React.ReactNode {
+        console.log("BigCountNumber render");
+
+        return (
+            <p>
+                <span className="prefix">Count: </span>
+                {count}
+            </p>
+        );
+    }
+
+    function Decoration(): React.ReactNode {
+        console.log("Decoration render");
+        return <div className="decoration">***** decoration *****</div>;
+    }
+
+CREATING PURE COMPONENTS THAT IGNORE RERENDER REQUESTS
+-------------------------------------------------------------------------------
+In the example in the above section, Decoration is an example of a PURE
+component, as it will always produce the SAME return value.  Therefore, we know
+that it is not necessary for it to rerender on every state change to the Counter
+component, but the React compiler doesn't know that.  In order to change that,
+we can use the React.memo method.
+
+    const Decoration = React.memo(({ dummyProp }: { dummyProp: string }) => {
+        console.log("Decoration render " + dummyProp);
+        return <div className="decoration">***** decoration *****</div>;
+    });
+
+A better and more concise way of writing the above syntax would be to define
+Decoration just like we normally would, but inside of its own module.  Then, you
+can execute:
+
+    export default React.memo(Decoration);
+
+Now Decoration will only rerender:
+    - on the initial mounting of the App component,
+    - if the parent component triggers a state change that passes a different
+      value to dummyprop.
+
+Why is React.memo not the default behavior?
+    If there are enough props passed to a memoized component, it can actually be
+    slower to check if any of the props have changed than it would be to just
+    re-render the component.
+
+When should we memoize a component?
+    If the component contains many descendents, or the component body performs a
+    lot of internal work, memoizing the component can significantly improve
+    performance.
+
+
+USECONTEXT WITH REACT.MEMO AND RERENDERING
+-------------------------------------------------------------------------------
+These two examples are more or less the same thing.  They product the same
+renders.  In the first implementation, its as if we had an 'invisible' argument
+to the callback.
+
+    const GreetUser = React.memo(() => {
+        const user = React.useContext(UserContext);
+
+        if (!user) {
+            return "Hi there!";
+        }
+
+        return `Hello ${user.name}!`;
+    });
+
+    const GreetUser = React.memo(({ user }) => {
+        if (!user) {
+            return "Hi there!";
+        }
+
+        return `Hello ${user.name}!`;
+    });
+
+
+TRACKING STATE CHANGES OUTSIDE OF THE LOGGING
+-------------------------------------------------------------------------------
+Open the React Profiler in devtools.
+
+Click the record button (on far left at time of writing this) and make changes.
+React will create snapshots with information for each render.
+
+Click the settings icon, go to general, and check the Highlight updates when
+components render box.  This will modify the GUI to show you what components are
+rendering.
+
+
+MEMOIZATION CONSIDERATIONS
+-------------------------------------------------------------------------------
+    function App() {
+        const dog = {
+            name: 'Spot',
+            breed: 'Jack Russell Terrier'
+        };
+
+        return (
+            <DogProfile dog={dog} />
+        );
+    }
+
+Imagine that the DogProfile component was memoized.  It wouldn't matter in this
+case because React components are still functions that run every time they are
+re-rendered.  That means that every time App is re-rendered it assigns dog to a
+new object literal which is of course not going to pass strict equality which
+causes the React.memo method to not ignore the re-render request when App
+re-renders.
+
+
+-------------------------------------------------------------------------------
+USEMEMO AND USECALLBACK
+-------------------------------------------------------------------------------
+https://www.joshwcomeau.com/react/usememo-and-usecallback/
+-------------------------------------------------------------------------------
+
+USEMEMO
+-------------------------------------------------------------------------------
+The useMemo hook prevents unneccessary re-execution of functions between
+re-renders.  It accepts two arguments.  The first being a callback function, and
+the second being a dependency array.  The useMemo hook will cache the result of
+a function and only re-execute the function to update the result if one of the
+dependencies change.  If there are no dependencies, it will only compute the
+value from the callback the first time the component mounts.
+
+USE CASE 1 - HEAVY COMPUTATIONS:
+
+    const foobar = useMemo(() => {
+        for (let i = 0; i < 1000000000; ++i) {}
+
+        console.log("Callback executed");
+
+        return dummy;
+    }, [dummy]);
+
+In the example above, we use the useMemo hook to only execute the callback
+passed as an argument when one of its dependencies changes.
+
+USE CASE 2 - PRESERVED REFERENCES:
+
+    In this example, even though we wrap the DogProfile in a React.memo, it
+    still re-renders because we pass in a new object literal every time the App
+    component re-renders which means the dog prop no longer passes strict
+    equality.  For demonstration purposes as this is pretty stupid code.
+
+    export default function App() {
+        const [count, setCount] = useState<number>(0);
+
+        const dog = {
+            name: "Spot",
+            breed: "Jack Russel Terrier",
+        };
+
+        return (
+            <>
+                <p>{count}</p>
+                <button onClick={() => setCount(count + 1)}>Inc</button>
+                <DogProfile dog={dog} />
+            </>
+        );
+    }
+
+    interface DogProps {
+        dog: {
+            name: string;
+            breed: string;
+        };
+    }
+
+    const DogProfile = React.memo(({ dog }: DogProps): React.ReactNode => {
+        console.log("render");
+        return (
+            <>
+                <p>{`name: ${dog.name}`}</p>
+                <p>{`breed: ${dog.name}`}</p>
+            </>
+        );
+    });
+
+    To fix this we can use useMemo
+
+    const dog = useMemo(() => {
+        return {
+            name: "Spot",
+            breed: "Jack Russel Terrier",
+        };
+    }, []);
+
+
+
+
+IS USEMEMO ALWAYS NECESSARY?
+-------------------------------------------------------------------------------
+In the first example above, we only execute the callback argument when the
+'dummy' variable is modified.  By that logic and depending on the situation, we
+can sometimes eliminate the need for useMemo by separating out the logic into
+multiple components to prevent unnecessary re-renders.  See sections on
+React.memo and re-renders for more details.
+
+Suppose we separated out the logic for foobar and the logic for dummy into two
+separate components.  Suppose we had to lift state up from the dummy component.
+We could still get out of using useMemo by wrapping the foobar component in a
+React.memo function.
+
+The useMemo hook memoizes the COMPUTATION, while the React.memo function
+memoizes the entire COMPONENT instead.
+
+
+USECALLBACK
+-------------------------------------------------------------------------------
+useCallback is just like useMemo, but for functions.  Just like arrays and
+objects defined within a functional component, functions defined within a
+functional component are also redefined on every re-render which produces
+separate but functionally identical functions because functions are just like
+objects in JavaScript.
+
+Just like the DogProfile example, the handleClick function gets recreated every
+re-render and thus the MyButton component re-renders despite being wrapped in a
+React.memo call because handleClick no longer points to the same object
+(function).
+
+    function App() {
+        const [count, setCount] = useState<number>(0);
+
+        function handleClick(): void {
+            setCount(count + 1);
+        }
+
+        return (
+            <>
+                <p>{count}</p>
+                <MyButton handleClick={handleClick} />
+            </>
+        );
+    }
+
+    interface MyButtonProps {
+        handleClick(): void;
+    }
+    const MyButton = React.memo(
+        ({ handleClick }: MyButtonProps): React.ReactNode => {
+            console.log("Rendered");
+            return <button onClick={handleClick}>Increase</button>;
+        },
+    );
+
+We can use either useCallback or useMemo to solve this.  Although the name
+useCallback more accurately describes what we want to do.
+
+USEMEMO VERSION (WE NEED TO RETURN A FUNCTION INSTEAD OF A COMPUTED VALUE):
+
+    const handleClick = useMemo(() => {
+        return () => {
+            setCount((count) => count + 1);
+        };
+    }, []);
+
+USECALLBACK VERSION:
+
+    const handleClick = useCallback(() => {
+        setCount((count) => count + 1);
+    }, []);
+
+So useCallback is essentially the same thing as useMemo but removes the step of
+needing to wrap the callback in a function definition.
+
+*** NOTE ***
+Notice how the setCount function call was not done like this?:
+
+    setCount(count + 1);
+
+That is because when we memoize the function, the count variable value is given
+to the function from the surrounding lexical context and that is of course
+permanent.  Since we are no longer generating a new function on every re-render,
+the count variable is always 1.  Fortunately, the setState function allows for a
+callback overload that references the state object directly and this solves our
+problem.
+
+*** NOTE ***
+Notice how we still needed to use React.memo on the MyButton component?  Using
+useCallback doesn't magically reduce renders, but it can keep an function
+reference consistent throughout re-renders which can help keep an already PURE
+component pure.
+
+
+-------------------------------------------------------------------------------
+CLASS COMPONENTS
+-------------------------------------------------------------------------------
+EXAMPLE OF A CLASS BASED COMPONENT THAT IS PART OF A LARGER APPLICATION:
+
+interface Props {
+    name: string;
+}
+
+interface State {
+    todos: string[];
+    inputVal: string;
+}
+
+class ClassInput extends React.Component<Props> {
+    public state: State;
+
+    constructor(props: Props) {
+        super(props);
+
+        this.state = {
+            todos: [],
+            inputVal: "",
+        };
+
+        this.handleInputChange = this.handleInputChange.bind(this);
+        this.handleSubmit = this.handleSubmit.bind(this);
+        this.handleDeleteTask = this.handleDeleteTask.bind(this);
+        this.handleEditTask = this.handleEditTask.bind(this);
+    }
+
+    handleInputChange(e: any): void {
+        /* Use the callback overload of setState which is a reference to
+         * this.state when it is called */
+        this.setState((state: State) => {
+            return { ...state, inputVal: e.target.value };
+        });
+    }
+
+    handleSubmit(e: any): void {
+        e.preventDefault();
+        if (this.state.todos.includes(this.state.inputVal)) {
+            return alert("You already added that one bozo");
+        }
+
+        if (this.state.inputVal === "") {
+            return alert("You didn't add anything bozo");
+        }
+
+        this.setState((state: State) => {
+            return {
+                ...state,
+                todos: state.todos.concat(state.inputVal),
+                inputVal: "",
+            };
+        });
+    }
+
+    handleDeleteTask(toDelete: string): void {
+        const newTodos: string[] = this.state.todos.filter((todo) => {
+            return todo !== toDelete;
+        });
+
+        this.setState((state: State) => {
+            return {
+                ...state,
+                todos: newTodos,
+            };
+        });
+    }
+
+    handleEditTask(origTodo: string, newTodo: string): void {
+        if (origTodo !== newTodo && this.state.todos.includes(newTodo)) {
+            return alert("That one already exists bozo");
+        }
+
+        const newTodos: string[] = this.state.todos.map((todo) => {
+            if (todo === origTodo) return newTodo;
+            return todo;
+        });
+
+        this.setState((state: State) => {
+            return {
+                ...state,
+                todos: newTodos,
+            };
+        });
+    }
+
+    render(): React.ReactNode {
+        return (
+            <section>
+                <h3>{`Welcome ${this.props.name}`}</h3>
+                <form onSubmit={this.handleSubmit} name="task-entry">
+                    <label htmlFor="task-entry">Enter a task: </label>
+                    <input
+                        type="text"
+                        name="task-entry"
+                        value={this.state.inputVal}
+                        onChange={this.handleInputChange}
+                        autoFocus
+                    />
+                    <button type="submit">Submit</button>
+                </form>
+                <Count numTasks={this.state.todos.length} />
+                <h4>All da tasks</h4>
+                <ul>
+                    {this.state.todos.map((todo) => {
+                        return (
+                            <Task
+                                key={todo}
+                                todo={todo}
+                                handleDeleteTask={this.handleDeleteTask}
+                                handleEditTask={this.handleEditTask}
+                            />
+                        );
+                    })}
+                </ul>
+            </section>
+        );
+    }
+}
+
+
+CLASS BASED COMPONENT LIFECYCLE METHODS
+-------------------------------------------------------------------------------
+
+render()
+    This is the only required lifecycle method.  It runs on MOUNT and UPDATE of
+    a component and is responsible for building HTMLElements from the React
+    markup it returns.
+
+componentDidMount()
+    This method is executed after the component is mounted, or in other words after
+    the component is inserted into the Document Object Model tree.
+
+    This is similar to the useEffect hook with an empty dependency array.
+
+componentDidUpdate()
+    This method is executed after a component re-renders.  A potential issue you
+    could run into with this method is an endless loop if it is used to update
+    state indiscriminately, as updating state will cause the component to
+    re-render again.  A potential use case for this method would be re-fetching
+    user data if the 'user' state variable is modified.
+
+    This is similar to the useEffect hook with all state variables part of the
+    dependency array.  However, the useEffect hook removes the need to add
+    conditionals by allowing you to select the state updates (dependencies) that
+    trigger the useEffect callback.
+
+componentWillUnmount()
+    This is called before a component is unmounted and destroyed, or in other
+    words right before the component is removed from the DOM tree.
+
+    This is similar to the return callback in the useEffect hook.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

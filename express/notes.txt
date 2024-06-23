@@ -1,0 +1,1126 @@
+-------------------------------------------------------------------------------
+EXPRESS.JS
+-------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+INTRO TO EXPRESS
+-------------------------------------------------------------------------------
+https://developer.mozilla.org/en-US/docs/Learn/Server-side/Express_Nodejs/Introduction
+-------------------------------------------------------------------------------
+
+Commonly used terminology:
+
+    HTTP VERB:
+        GET, POST, PUT, DELETE, PATCH, HEAD, OPTIONS, TRACE
+
+    ROUTE:
+        URL pattern
+
+As a quick refresher on the HTTP module in Node.js, here is a 'Hello World'
+server written in TypeScript:
+
+    import * as http from "http";
+
+    /*
+     * 127.0.0.1 is the IP address for localhost
+     * When we pass this to the server.listen method, we are
+     * telling the server to only accept requests from the
+     * localhost IP (only accept requests from the same machine
+     * as the machine the server is running on) */
+    const hostname: string = "127.0.0.1";
+
+    /* The port through which communications between the server/client
+     * will take place.  8000 is commonly used to avoid conflict with
+     * standard HTTP ports */
+    const port: number = 8000;
+
+    // 10000% unnecessary, but just doing this for practice
+    type Server = ReturnType<typeof http.createServer>;
+
+    const server: Server = http.createServer((request, response) => {
+
+        /*
+         * The writeHead method writes a status code and writes to the
+         * Response Headers.  Headers are used to provide essential
+         * information about a Request or Response that isn't part of the
+         * main content of the message.  Below, we add a Content-Type header
+         * to the Head, but there are more such as Content-Length,
+         * Set-Cookie, Cache-Control, etc that we could use
+        */
+        response.writeHead(200, { "Content-Type": "text/plain" });
+
+        /* Send the Response.  It will be parsed as 'text/plain' as we specified
+         * in the Content-Type header */
+        response.end("Hello Brah\n");
+    });
+
+    server.listen(port, hostname, () => {
+        console.log(`Port running on http://${hostname}:${port}`);
+    });
+
+
+It is possible to extend this example to something more practical, but by doing
+so you would be reinventing the wheel.  Without a framework, it is possible to
+handle different HTTP verbs (GET, PUT, POST, DELETE) and handle requests from
+different URL paths (aka routes), serve static files, use templates to
+dynamically create a response...  but it is much easier to do all of this with a
+framework like Express.  Express for example has more intuitive syntax such as
+res.sendFile, res.json to send a json or file Response instead of specifying the
+Content-Type explicitly.
+
+Express is the most popular Node.js web framework and the underlying libraryf or
+a number of other popular Node.js frameworks.  Express provides mechanisms to:
+
+    - Write handlers for requests with different HTTP verbs at different URl
+      paths (routes)
+
+    - Integrate with VIEW rendering engines in order to generate responses by
+      inserting data into templates
+
+    - Set common web application setting like the port to use for connecting,
+      and the location of templates that are used for rendering the response
+
+    - Add additional request processing MIDDLEWARE at any point within the
+      request handling pipeline.
+
+Express by itself is a fairly minimalist framework, but there are many
+compatible middleware packages to address almost any web dev problem.
+
+LIST OF MIDDLEWARE COMPATIBLE WITH EXPRESS
+    https://expressjs.com/en/resources/middleware.html
+
+
+OPINIONATED VS UNOPINIONATED
+-------------------------------------------------------------------------------
+Web frameworks are often referred to as one of the above.  Express is an example
+of an UNOPINIONATED frameowork.
+
+OPINIONATED frameworks are those with more restrictions that force you into what
+they believe is the 'right way' to handle a particular task.  Opinionated
+frameworks are good for supporting rapid development in a particular domain, but
+can be less flexible for problems outside their main domain.  Often times there
+are well understood and proven techniques to solve a particular problem, and
+this is where opinionated frameworks are helpful.
+
+UNOPINIONATED frameworks have fewer restrictions on the best way to achieve a
+goal, which makes it easier to use the most suitable tools for a particular
+task, at the cost of needing to figure out the best way yourself.
+
+
+EXPRESS DEVELOPMENT ENVIRONMENT
+-------------------------------------------------------------------------------
+https://developer.mozilla.org/en-US/docs/Learn/Server-side/Express_Nodejs/development_environment
+
+Express has an npm package, Express Application Generator which can be used for
+creating skeleton Express web apps that follow the MVC pattern.
+
+    # globally install the Express Application Generator
+    sudo npm install -g express-generator
+
+    # create an express app named hello world on the CLI
+    express helloworld
+
+This is extremely outdated.  The only reason I'm including it to use as a rough
+guideline for how to setup a project or build your own template.
+
+
+HOW DOES EXPRESS WORK?
+-------------------------------------------------------------------------------
+Express provides methods to specify what function is called for a particular
+HTTP verb and ROUTE (URL pattern).  It also has methods to specify what template
+(VIEW) engine is used, where template files are located, and what template to
+use to render a response.
+
+You can use Express middleware to add support for cookies, sessions, and
+users...
+
+You can use ANY database mechanism supported by Node.
+
+
+EXPRESS HELLO WORLD SERVER
+-------------------------------------------------------------------------------
+FIRST INSTALL EXPRESS
+
+    npm install express
+
+    # if using TypeScript
+    npm install --save-dev @types/express
+
+Now you can create the server:
+
+    import express from "express";
+
+    // Again... 1000000% unnecessary but for practice
+    type App = ReturnType<typeof express>;
+
+    const app: App = express();
+    const PORT: number = Number(process.env.PORT) || 3000;
+
+    app.get("/", (request, response) => {
+
+        /* We call the send method here but there are plenty more
+         * methods for the Response object */
+        response.send("Hello World!");
+
+    });
+
+    app.listen(PORT, () => {
+        console.log(`Example app listening on port ${PORT}`);
+    });
+
+
+The 'express' function returns an object that contains methods for routing HTTP
+requests, configuring middleware, rendering HTML views, registering a template
+engine, modifying application settings, etc...  The traditional name given to
+this object is 'app'.
+
+The first argument to the app.get method which was '/' in our example specifies
+that the second argument callback will be invoked anytime there is an HTTP GET
+request with a path '/' relative to the root URL of the site.  Just like with
+the http.createServer method, the callback parameters Request and Response
+objects respectively.
+
+
+CREATING ROUTE HANDLERS
+-------------------------------------------------------------------------------
+In the Hello World! Express example, we created a ROUTE HANDLER with the
+app.get("/", cb) call.  The cb was the handler for when our server recieves a
+Request of type GET to the root URL of our site.  This is roughly equivalent to
+doing the following inside the body of the http.createServer callback.
+
+    if (request.url === "/" && request.method === "GET") {
+        // write some code to handle this or pass in a
+        // designated handler
+    }
+
+Using just the app.get method makes it MUCH easier to deal with routing, because
+before we had to write all of this inside of the callback function body which is
+just messy.
+
+
+SERVING STATIC FILES WITH EXPRESS.STATIC
+-------------------------------------------------------------------------------
+In general, it is going to be a good idea to use express.static to serve static
+files to the client before configuring other get middleware to could end the
+Response lifecycle.
+
+There are a couple points that are important when trying to understand how the
+express.static middleware function works.
+
+1. When a client parses a response that contains HTML, if that HTML file
+contains a link or script tag, then the client will AUTOMATICALLY send GET
+Requests to the server for those files.
+
+2. When a client visits a URL, if it has not recieved an explicit HTML Response
+from the server it will also be able to use any html files located within the
+directory on the client side.
+
+The first point is the most important to understand what the express.static
+middleware function does.  While you can explicitly route html to a certain
+URL, you could also let express.static handle this for you.
+
+express.static abstracts away the logic of configuring the GET handlers needed
+to send a Response to the automatic requests when the client parses your html.
+Otherwise you would need to write these yourself with the app.get method.
+
+Here is an example of how its used:
+
+    app.use("/", express.static("/fullpath/to/source/dir"));
+
+As stated, express.static abstracts aways the logic of configuring GET handlers.
+The first argument is the first part of the request.url and gets joined with the
+filenames inside of the specified directory in the express.static argument.
+Thus if in the example above we had a index.html, style.css, and script.js files
+the specified directories, we would be creating get requests for the routes:
+    /index.html
+    /style.css
+    /script.js
+
+But what happens when the client browser makes a request from '/'?  The
+explanation given so far doesn't state that the express.static configured a GET
+Request for '/'.  For convenience, if we have an index.html in the directory we
+specified, express.static will configure another GET Request for just the root
+part of the client path (in our case this is '/') and serve the index.html on a
+Request from that URL.  However, this ONLY works with an index.html file.  If
+the html file in the directory is of name other than index.html, we need to
+explicitly serve it ourself by creating an GET handler with app.get.
+
+NOTE: In order for the express.static middleware to be configured, it should be
+ordered before any dynamic routing is configured so that other get handlers
+don't interfere with it.  For example, lets say you use express.static to
+serve a style.css file.  You use app.get to serve an HTML file to some route and
+when that HTML file is parsed it sees that it needs to create a get request for
+the path to the css file.  The response has ended by now and the client makes
+another request starting another response lifecycle.  The server goes through
+the get handlers and none match.  However, lets say we setup a default
+middleware for a 404 response.  That middleware would END the response lifecycle
+and our express.static middleware would not be ran!!!!  If you got rid of this
+middleware to handle a 404, then our express.static middleware would be ran but
+thats not a good solution.  Long story short, serving static files at the
+beginning of the middleware stack is a good idea as it isn't going to block
+other important middleware from running, but doing it the other way around makes
+it easy for other middleware to block us from serving these static files.
+
+NOTE: If we did not have an index.html in our directory we are serving, then if
+we will not run create any GET handlers for the first argument path.  If we DID
+however, we would create a GET handler for the first argument path, and thus the
+user were to visit that specific URL, then that handler would run and end the
+Response lifecycle and any other GET handlers we wrote for that file would not
+be executed.
+
+
+MIDDLEWARE
+-------------------------------------------------------------------------------
+Middleware typically performs some operation on the Request or Response and then
+calls the next stack function which might be more middleware or just the route
+handler.  That is why it is called 'middleware'.  It injects some functionality
+in the after the request/response but before executing your route handler.
+
+The order in which middleware is called is up to the app developer.
+
+NOTE: If the middleware does not end the request-response cycle, then it must
+call next() to pass control to the next middleware function, or else the request
+will be left hanging.
+
+Pretty awful writeup on this topic from MDN, even though its just an
+introduction. For real information use these links:
+
+    https://expressjs.com/en/guide/using-middleware.html
+    https://expressjs.com/en/guide/writing-middleware.html
+
+
+MIDDLEWARE
+-------------------------------------------------------------------------------
+To understand middleware, you need to understand the architecture of the Express
+framework.
+
+CREATION OF THE APP OBJECT:
+---------------------------
+We first use the 'express' function that is the default export from the
+'express' module which creates an App object.  Just like the server object we
+get from http.createServer, the App object has a listen method that tells the
+server to listen for requests on the specified $PORT.
+
+
+CONFIGURING REQUEST HANDLERS:
+-----------------------------
+Before we call the app.listen method, we need to tell the server what kind of
+Requests it should respond to and how to respond to these Requests.  Express
+makes this process easy.  We can do this through the various App methods like
+app.get, app.put, app.post, app.delete, and app.use.  The app.get method takes
+in a route in the form of a string and sends a Response when the server recieves
+a GET request at that route.  The Response it sends is handled by the callback
+function that is passed to the app method that called it.
+
+Just like with the Node.js http.createServer method which takes in a callback
+with the two parameters being the Request and Response objects respectively, the
+callback in the app methods ALSO follows that same signature. However, a notable
+difference is that in Express, this callback can also define a NEXT parameter
+which is a function.  Without calling this NEXT function inside the handler
+body, the App will 'end the Response lifecycle', which means that it will
+consider the Response to the client finished and not consider any more handlers
+or check any more conditions.  But if we call NEXT function inside the
+handler, the Response lifecycle continues and the App continues to check to see
+if any handlers can be executed.
+
+In most cases it is a good thing to end the Response lifecycle.  Go back to the
+example of setting up a server with the HTTP module.  In order to handle an
+unhandled route, we need to make sure that this runs ONLY if no other GET route
+condition has been met.  Simple enough for a basic example, but as the
+complexity of the server grows, you would definitely want abstractions to handle
+this.  The NEXT function is one such abstraction because it allows us to choose
+when we continue or end the Response lifecycle.  This snippet of code from the
+callback we pass to the http.createServer method demonstrates how we might
+handle this problem without Express by returning early after we handle some
+Request.
+
+    if (req.method === "GET" && req.url === "/some-page") {
+        getMethodSomePageHandler(req, res);
+        return;
+    }
+
+It is important to note that once a Response has been sent, sending another
+Response would cause an error which is why Request handlers end the Response
+lifecycle unless otherwise specified with the next() function.  However,
+sometimes you want a handler to modify the Request and/or Response objects on
+the way down the middleware (request handler) stack, and this is where you would
+want to use the next() function.
+
+
+THE NEXT CALLBACK:
+------------------
+The NEXT function tells the app to continue checking to see if some condition is
+met.  Typically in the app.get callback we will SEND the Response object to the
+client with response.send().  This should be the end of the Response lifecycle
+and thus we do not want to call the next callback.  Doing so will attempt to
+overwrite the Response headers that were set in the initial GET callback that we
+called next in and you end up with an error like this.
+
+    node:_http_outgoing:703
+        throw new ERR_HTTP_HEADERS_SENT('set');
+              ^
+
+    Error [ERR_HTTP_HEADERS_SENT]: Cannot set headers after they are sent to the client
+
+If another condition is met we get an error like this.  If no other condition is
+met, we still get an error like this because the app will attempt to send a
+default 404 Response in the event no condition is met.
+
+MIDDLEWARE AND THE APP.USE METHOD:
+----------------------------------
+So now that the architecture of the Express framework has been explained in more
+detail, we can understand what middleware is.  The callback function that we
+pass to these methods is what we call middleware because it is executed IN THE
+MIDDLE of the Request and Response.
+
+Middleware handles the Response and the NEXT method allows us to chain together
+middleware to encapsulate logic used to handle modifying the Response object.
+Oftentimes, middleware is used with the app.use method because the app.use
+method does need to pass any conditional checks before it is executed.
+
+Express ships out of the box with limited middleware.  One such built in
+middleware function is the express.static method which abstracts away the
+process of serving files to the client.  (see section of express.static)
+
+
+MIDDLEWARE STACK ( ORDER OF MIDDLEWARE )
+-------------------------------------------------------------------------------
+As we stated, middleware refers to the Request handlers we define through the
+various Express App methods.  Remember that Express is an unopinionated
+framework which means Express gives a lot of freedom for how to handle our
+server.  In Express, the order in which we call the App methods effects the
+order of the Response lifecycle.  The order in which these methods are called to
+configure Request handlers (middleware) are what makes up the middleware stack.
+
+The order of the middleware stack is important because if any of the middleware
+in the stack ends the lifecycle of a Response, the next middleware in the stack
+will not run and if it was intended to run that is a headache!
+
+A stack might be ordered like this:
+    security, logging, compression, body parsing, static files, routes, error
+    handling, 404 error handling (a catch all)
+
+
+-------------------------------------------------------------------------------
+EXPRESSJS OFFICIAL GUIDE
+-------------------------------------------------------------------------------
+https://expressjs.com/en/guide/routing.html
+-------------------------------------------------------------------------------
+
+ROUTING
+-------------------------------------------------------------------------------
+Routing refers to determining how an application responds to:
+    - a client Request from a particular endpoint, which is a URI (path)
+    - a specific HTTP Request method (GET, POST, etc...)
+
+Routing takes the following structure:
+
+    app.METHOD(PATH, HANDLER);
+
+- 'app' is an instance of 'express' (what is returned from the Express's default
+  export which is a function)
+- METHOD is the HTTP Request method
+- PATH is the path from which the client makes the Request from
+- HANDLER is the callback function that is executed when the route and method
+  are matched
+
+You can use app.all() to handle all the HTTP Request methods and app.use() to
+specify more specific middleware or just pass in the normal middleware callback.
+
+NOTE: The handler functions passed to the routing methods are middleware
+themselves.  They perform some task in the MIDDLE of the server recieving a
+Request and sending a Response.  In Express, any function that has accest to the
+Request object, Response object, and the next middleware function in the req-res
+lifecycle is considered middleware.
+
+Routing methods can accept more than a single callback function as an argument.
+When using more than one callback, your callback function must include a third
+'next' parameter which is a function and it must be called in the function body
+to hand off control to the next callback.
+
+    app.get(
+        "/",
+        (req, res, next) => {
+            // Don't send the response yet!  You can't resend a Response
+            console.log("Do nothing");
+            next();
+        },
+        (req, res, next) => {
+            console.log("Do nothing again");
+            next();
+        },
+        (req, res) => {
+            res.send("brodude");
+        },
+    );
+
+
+ROUTE PATHS
+-------------------------------------------------------------------------------
+Route paths can be strings, string patterns, or regular expressions.
+
+The characters ?, +, *, and () are subsets of their regex counterparts.  The -
+and the . are interpreted literally however.
+
+If you need to use a dollar character in a path string, it needs to be ESCAPED
+within parentheses and brackets ([]).  For example, the path string for Requests
+from '/data/$book' would be '/data/([\$])book'
+
+Regex Examples:
+
+    app.get(/a/, (req, res) => {
+        res.send('Matches anything with "a" in it.')
+    })
+
+    app.get(/ab(cd)?e, (req, res) => {
+        res.send('Matches "abe" and "abcde".')
+    })
+
+
+ROUTE PARAMETERS
+-------------------------------------------------------------------------------
+Route parameters are named URL segments that are used to capture the values
+specific at their position in the URL.  The captured values are populated in the
+request.params object with the name of th
+
+    app.get("/users/:userID/books/:bookId", (req, res) => {
+        res.send(req.params);
+    });
+
+Now go to /users/12345/books/foobar and you will see the following JSON object:
+
+    {"userID": 12345, "bookID", "foobar"}
+
+Route Path:         /flights/:from-:to
+Request URL:        http://localhost:3000/flights/LAX-SFO
+request.params:     { "from": "LAX", "to": "SFO" }
+
+NOTE: - and . are interpreted literally so they cannot be used in the naming of
+a route parameter, but can be used alongside route parameters.
+
+You can use a regex within parentheses in a route parameter.  In this case, we
+are saying that the :userId parameter must be a number.
+
+Route Path:         /user/:userId(\\d+)
+Request URL:        http://localhost:3000/user/42
+request.params:     { "userID": "42" }
+
+NOTE: The double escape character!  Maybe it works without the double escape
+sometimes, but I needed it here.
+
+
+PASSING MULTIPLE ROUTE HANDLERS
+-------------------------------------------------------------------------------
+You can do it the same way as was shown in the example a couple sections above,
+or you can pass in an array of route handlers.
+
+    const handler1 = (req, res, next) => {
+        console.log("Hello from handler 1");
+        next();
+    };
+    const handler2 = (req, res, next) => {
+        console.log("Hello from handler 2");
+        next();
+    };
+    const handler3 = (req, res) => {
+        console.log("Hello from handler 3");
+        console.log("Finally sending the Response");
+        res.send("Response sent");
+    };
+
+    app.get("/", [handler1, handler2, handler3]);
+
+
+The methods on the Response object can send a Response to the client, which
+terminates the Request-Response lifecycle.  If none of these methods are called
+from a route handler, the client Request will not recieve a Response from the
+server.
+
+res.download()
+    Prompt a file to be downloaded
+
+res.end()
+    End the response process
+
+res.json()
+    Send a JSON response
+
+res.jsonp()
+    Send a JSON response with JSONP support
+
+res.redirect()
+    Redirect a request
+
+res.render()
+    Render a view template
+
+res.send()
+    Send a response of various types
+
+res.sendFile()
+    Send a file as an octet stream
+
+res.sendStatus()
+    Send the response status code and send its string representation as the
+    response body
+
+
+APP.ROUTE()
+-------------------------------------------------------------------------------
+You can create chainable route handlers for a specified route path with
+app.route()
+
+    app.route("/book")
+        .get((req, res) => {
+            res.send("Get a random book");
+        })
+        .post((req, res) => {
+            res.send("Add a book");
+        })
+        .put((req, res) => {
+            res.send("Update the book");
+        })
+
+
+EXPRESS.ROUTER()
+-------------------------------------------------------------------------------
+The express.Router() method returns a Router instance which is like a 'mini-app'
+object.  A Router object is a complete middleware and routing system.
+
+In the 'birds' example, we separate out concerns by treating the /birds route as
+its own / route.  Then we import the router object into our main app file and
+call app.use to use it with the /birds route.  This way, if we had a very long
+route we needed to serve, we could abstract away the static part of the route
+that always stays the same for the route we are programming.
+
+birds.ts
+--------------------------------------------------------
+    import express, { Request, Response } from "express";
+    export const router = express.Router();
+
+    router.use((req: Request, res: Response, next) => {
+        console.log(`Time: ${Date.now()}`);
+        next();
+    });
+
+    router.get("/", (req: Request, res: Response) => {
+        res.send("Birds home page");
+    });
+
+    router.get("/about", (req: Request, res: Response) => {
+        res.send("Birds about");
+    });
+
+index.ts
+--------------------------------------------------------
+    import express from "express";
+    import { router as birdsRouter } from "./birds";
+
+    const app = express();
+    const PORT: number = Number(process.env.PORT) || 3000;
+
+    app.use("/birds", birdsRouter);
+
+    app.listen(PORT, () => {
+        console.log(`Example app listening on port ${PORT}`);
+    });
+
+
+-------------------------------------------------------------------------------
+WRITING MIDDLEWARE FOR USE IN EXPRESS APPS
+-------------------------------------------------------------------------------
+https://expressjs.com/en/guide/writing-middleware.html
+-------------------------------------------------------------------------------
+Middleware functions are functions that have access to the Request object, the
+Response object, and the 'next' function in an applications request-response
+cycle.
+
+    app.use((req: Request, res: Response, next) => {
+        console.log("Log something");
+        next();
+    });
+
+    interface CustomReq extends Request {
+        foo: string;
+    }
+
+    app.use((req: CustomReq, res: Response, next) => {
+        console.log("Modifying Request object");
+        req.foo = "foobar";
+        next();
+    });
+
+    app.get("/", (req: CustomReq, res: Response) => {
+        res.send(req.foo);
+    });
+
+The the middleware function in the first app.use is the first in the MIDDLEWARE
+STACK.  Its called the middleware stack, although it operates in more of a FIFO
+structure as the first middleware to be defined is the first to be checked when
+a Request is recieved.
+
+The above example creates a chain of middleware and modifies the Request object
+which is a convenient way of passing data through the middleware stack.
+
+For the next example, imagine we installed a cookie parser package that came
+with middleware we could use in our app.  The middleware returns a Promise.
+In the event the Promise rejects, it automatically triggers the error handler
+and hands off control to the next middleware.  However, we still need to call
+the next function in the event that the Promise resolves.
+
+    async function validateCookies(req, res, next) {
+        await cookieValidator(req.cookies);
+        next();
+    }
+
+    // presumably, cookieParser returns a callback that fits the function
+    // signature of a middleware function
+    app.use(cookieParser());
+
+    app.use(validateCookies);
+
+
+CONFIGURABLE MIDDLEWARE
+-------------------------------------------------------------------------------
+We define a higher order function that returns a middleware function.  This
+allows us to create more modular middleware.  A simple string parameter was used
+here for simplicity but you could pass in a config object to take this concept a
+step further.
+
+    interface CustomReq extends Request {
+        customMessage: string;
+    }
+
+    function configurableMiddleware(customMessage: string) {
+        return (req: CustomReq, Res: Response, next): void => {
+            console.log(`'${customMessage}' from configurableMiddleware`);
+            req.customMessage = customMessage;
+            next();
+        };
+    }
+
+    app.use(configurableMiddleware("This is a custom message"));
+
+    app.use((req: CustomReq, res: Response, next) => {
+        res.send(req.customMessage);
+    });
+
+
+USING MIDDLEWARE
+-------------------------------------------------------------------------------
+Express has minimal functionality of its own.  It is a routing and middleware
+web framework and is thus essentially a series of middleware function calls.
+
+Middleware functions can perform the following tasks:
+    - Execute any code
+    - Modify the Request and Response objects
+    - End the request-response lifecycle
+    - Call the next middleware function in the middleware stack
+
+When a middleware function is called it will always terminate the
+request-response lifecycle if it doesn't call next (explicitly or implicitly).
+It can call next(err) implicitly if the middleware returns a Promise and the Promise
+rejects.
+
+Express applications use the following types of middleware:
+    - Application-level middleware
+    - Router-level middleware
+    - Error-handling middleware
+    - Built-in middleware
+    - Third-party middleware
+
+
+APPLICATION LEVEL MIDDLEWARE
+-------------------------------------------------------------------------------
+To bind application level middleware to an instance of the APP OBJECT, you can
+use the app.use() or app.METHOD() functions.
+
+app.use() accepts an optional first argument which defaults to "/".  The next
+argument (or arguments) is the middleware function.  The middleware function
+executes when the first argument path is extendable by the requested path
+(req.url).  It executes regardless of the Request method (req.method)
+
+For example, this sends a "foobar" Response whenever the client sends a Request
+from "/foobar" or any path derived from "/foobar" such as
+"/foobar/another-foobar"
+
+    app.use("/foobar", (req, res) => {
+        res.send("foobar");
+    });
+
+To execute a middleware function every time the app recieves a Request, you
+could drop the mount path argument (first argument).
+
+
+Below is an example of a middleware substack (multiple middleware arguments)
+that sends a Response to the path argument where :id is a route parameter that
+accepts only numbers.
+
+    app.get(
+        "/user/:id(\\d+)",
+        (req, res, next) => {
+            console.log(`Request URL: ${req.originalUrl}`);
+            next();
+        },
+        (req, res) => {
+            console.log(`Request Type: ${req.method}`);
+            res.send(path.basename(req.originalUrl));
+        },
+    );
+
+If you call an app.METHOD or router.METHOD function, if there are multiple
+middleware functions you can use next('route') to pass control to the next
+middleware route instead of executing the next middleware in the sub stack.
+
+To skip the rest of a Router instance's middleware function, call next('router')
+to pass control out of the router instance.
+
+
+ERROR HANDLING MIDDLEWARE
+-------------------------------------------------------------------------------
+Error handling middleware is a function overload of the the normal middleware
+function.  It ALWAYS takes FOUR arguments, with the first argument being an
+Error object.  Here is a basic example of how error handling might work:
+
+    app.use((req, res, next) => {
+        try {
+            throw new Error("foobar");
+        } catch (err) {
+            next(err);
+        }
+    });
+
+    app.use((err, req, res, next) => {
+        res.status(500).send(`An error occured: ${err.message}`);
+    });
+
+
+BUILTIN MIDDLEWARE
+-------------------------------------------------------------------------------
+Express has three builtin middleware functions.
+
+    https://expressjs.com/en/4x/api.html#express.static
+    https://expressjs.com/en/4x/api.html#express.json
+    https://expressjs.com/en/4x/api.html#express.urlencoded
+
+    - express.static
+        serves static assets suchas HTML files, stylesheets, images, etc...
+    - express.json
+        parses incoming requests with JSON payloads
+    - expres.urlencoded
+        parses incoming requests with URL encoded payloads
+
+
+EXPRESS.JSON AND EXPRESS.URLENCODED
+-------------------------------------------------------------------------------
+Imagine the client makes a fetch POST or PUT request to a certain route.  In
+such a case, the client would want to send some data to the server so that the
+database can be updated.  We can do this in the Request body in the fetch
+request.  The problem is that when we send data to the server (or client) we are
+sending over bytes of data (chunks) that need to be parsed.  The client and
+server handle parsing this data into their respective Request and Response
+objects.  However, the data which we send in the Request.body is NOT parsed
+automatically by the client.  It stays in buffer format and thus it is
+inaccessible on the server unless that buffer is parsed.  This is where the
+express.json() middleware comes in.
+
+EXPRESS.JSON
+    express.json() is middleware that parses a Request.body buffer that is sent
+    from the client as a JSON string.  It parses the buffer into a JavaScript
+    object which allows our server side operations to use data sent in the
+    Request.body from the client.
+
+
+EXPRESS.URLENCODED
+    express.urlencoded() is middleware that parses the Request.body buffer that
+    is sent by a form.  For example
+
+    <form method="POST" action="/">
+        <input type="text" name="username"><br>
+        <input type="password" name="password"><br>
+        <input type="checkbox" name="remember" value="true"><br>
+        <input type="submit">Submit</button>
+    </form>
+
+    When a user submits the above form, the client will send a POST request to
+    the "/" route (assume the form lives on the "/" route).  The data it sends
+    over is in URL-encoded format.  The Request.body will be:
+
+        "username=johndoe&password=12345&remember=true"
+
+    The express.urlencoded middleware handles the Request.body and parses the
+    URL-encoded body data into a JavaScript object for us.
+
+    The urlencoded accepts a config object as an argument which is
+
+        { extended: boolean }
+
+    When extended is set to FALSE, it uses the Node.js builtin 'querystring'
+    library to parse the URL-encoded data.  When extended is set to TRUE, it
+    uses the 'qs' library which is more diverse than the querystring library
+
+
+
+THIRD PARTY MIDDLEWARE
+-------------------------------------------------------------------------------
+Example:
+    npm install cookie-parser
+    import cookieParser from "cookie-parser";
+    app.use(cookieParser());
+
+
+USING TEMPLATE ENGINES WITH EXPRESS
+-------------------------------------------------------------------------------
+A template engine enables you to use static template files in your application.
+At runtime, the template engine replaces the variables in the template file with
+values that the server side provides.  The template then gets parsed into an
+HTML file and served as an HTML file.
+
+Here is a very simple example using the Pug template engine to serve dynamic
+html files that correspond to a specific user.
+
+1. Download the Pug npm package
+
+    npm install pug
+
+2. Create a views directory, and then create an index.pug file.
+
+3. app.set("view engine", "pug");
+
+4. Use the response.render method to file in the values in the template and
+serve to the specified route.
+
+/views/index.pug
+-----------------------------
+html
+    head
+        title= title
+    body
+        h1= message
+
+
+relevant snippet from index.ts
+-----------------------------
+app.set("view engine", "pug");
+
+app.get("/user/:name(\\w+)", (req: Request, res: Response) => {
+    const username: string = req.params.name;
+    res.render("index", {
+        title: `Hello ${username}`,
+        message: `Welcome to your homepage, ${username}`,
+    });
+});
+
+
+CREATING YOUR OWN TEMPLATE ENGINE FOR EXPRESS
+-------------------------------------------------------------------------------
+There are already template engines such as Pug, but you can create your own with
+Express.  Here is an example where we create our own 'bro' template engine that
+renders .bro files found in the 'views' directory:
+
+// Create the 'bro' engine
+app.engine(
+    "bro",
+    async (filePath: string, opts: any, callback: any): Promise<void> => {
+        try {
+            // read the view file
+            const content = await fs.readFile(filePath, "utf-8");
+
+            // Parse the .bro file into an HTML file as well as
+            // insert variables into the HTML
+            const rendered = content
+                .toString()
+                .replace("#title#", `<title>${opts.title}</title>`)
+                .replace("#message#", `<h1>${opts.message}</h1>`);
+
+            // run the callback that will serve the rendered content
+            callback(null, rendered);
+        } catch (err) {
+            // (error first callback, if an error occurs pass in the error)
+            callback(err);
+        }
+    },
+);
+
+// Set the views directory (fullpath using __dirname is essential here)
+app.set("views", path.join(__dirname, "views"));
+
+// Set the 'view engine' to 'bro'
+app.set("view engine", "bro");
+
+// render the index.bro file in our views directory on matches to this route
+app.get("/user/:name(\\w+)", (req: Request, res: Response) => {
+    const username: string = req.params.name;
+    res.render("index", {
+        title: `Hello ${username}`,
+        message: `Welcome to your homepage, ${username}`,
+    });
+});
+
+
+
+-------------------------------------------------------------------------------
+ERROR HANDLING
+-------------------------------------------------------------------------------
+https://expressjs.com/en/guide/error-handling.html
+-------------------------------------------------------------------------------
+
+
+-------------------------------------------------------------------------------
+DATABASE INTEGRATION
+-------------------------------------------------------------------------------
+https://expressjs.com/en/guide/database-integration.html
+-------------------------------------------------------------------------------
+Adding the capability to connect databases to Express apps is just a matter of
+installing the appropriate npm package for your database.  See the link for a
+explanation of how to integrate all of the most popular databases.
+
+To integrate with MongoDB you can also use the mongoose package.
+
+
+-------------------------------------------------------------------------------
+BASIC IDEA BEHIND GET POST PUT DELETE
+-------------------------------------------------------------------------------
+How does the frontend communicate with the server to update data on the server?
+I'm sure there are plenty of methods to do so, but the basic idea involves
+making a fetch request to the server.  Its important to understand what exactly
+a fetch request does.
+
+The builtin function 'fetch' which makes fetch request is a way to send a
+Request to a server.  It accepts a URL and a config object which configures the
+Request.  It returns a Promise that resolves to a the Response which the server
+sends back.  Here is an example:
+
+    const response = await fetch("http://localhost:8000/api/posts", {
+
+        // The server will get a Request where the method is POST and the route
+        // is the first arg.
+        method: "POST",
+
+        // headers Content-Type correlates to what we send in the body
+        headers: {
+            "Content-Type": "application/json",
+        },
+
+        // we specified the Content-Type is 'application/json' so we need
+        // to send json data here
+        body: JSON.stringify({ title: title }),
+    });
+
+In this example we use the Request method POST and use configure the Request
+body to the data we want to send.  You definitely don't NEED to use an
+HTMLFormElement to handle this but it can definitely make it easier to retrieve
+data from the form.  Heres how you could do that:
+
+    e.preventDefault();
+    const formData = new FormData(this);
+    const title = formData.get("title");
+
+Why are we passing in 'this' to the FormData constructor??? This is a common
+pattern and we do that because this snippet of code is part of a larger function
+that acts as the handler for the 'submit' event for our HTMLFormElement.  The
+FormData constructor can accept an HTMLFormElement as an argument.  Sure, we
+could have called a query to assign it to the constructor, but this way we can
+apply this same handler to any form element.  When we assign this handler to the
+<form instance>.onSubmit function, out function will inherit 'this' from the
+form instance its called from.
+
+So we sent a POST Request to the server, and now we really don't need to do
+anything else unless we want to handle the updated data the server sends back.
+Its also up to the server to handle what it sends back...so if we choose to
+handle any Response data, how we handle that data is going to depend on what the
+server decides to give us.
+
+The server handles this through routing just like we would a GET Request.  The
+difference is this time we utilize the Request.body data that the fetch Request
+sent to the server and we can use this data:
+
+    router.post("/", (req, res) => {
+        const newPost = {
+            id: posts.length + 1,
+            title: req.body.title,
+        };
+
+        if (!newPost.title) {
+            return res.status(400).json({ msg: "Include a title bozo" });
+        }
+
+        posts.push(newPost)
+        res.status(200).json(posts);
+    });
+
+In an important point to make is that although we don't necessarily need to do
+so in this example, it can be a good idea to have your server respond to GET
+Requests at the /api/posts route by sending the data.
+
+
+-------------------------------------------------------------------------------
+INTERACTING WITH THE DATABASE
+-------------------------------------------------------------------------------
+There are two common approaches for interacting with a database:
+    - Use the databases' native query language, such as SQL
+    - Using an Object Relation Mapper (ORM) which represents the websites data
+      as in the form of JavaScript objects, which are mapped to the underlying
+      database.  In MongoDB, it is an ODM because MongoDB is a document based
+      database.
+
+The best performance is gained by using SQL, or whatever query language is
+supported by the database.  At the cost of some performance, ODMs such as
+Mongoose for MongoDB and Sequelize for SQL offer benefits such as:
+    - Data Validation
+    - Data Validation integrated with middleware to enforce proper data
+    - Data Models to define relationship between documents
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

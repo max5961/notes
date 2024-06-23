@@ -1,0 +1,310 @@
+-------------------------------------------------------------------------------
+NCURSES
+-------------------------------------------------------------------------------
+https://tldp.org/HOWTO/NCURSES-Programming-HOWTO/intro.html#WHATCANWEDO
+-------------------------------------------------------------------------------
+NCURSES is a pun on the term "cursor optimization".  The Curses library forms a
+wrapper over working with raw terminal codes and provides an API.  It provides
+functions to:
+    - move the cursor
+    - create windows
+    - produce colors
+    - play with mouse
+    - and more
+
+Ncurses not only creates a wrapper over raw terminal codes, but it is also a
+framework to create a UIs in text mode.  Ncurses sister libraries panel, menu,
+and form provide an extension to the basic curses library.  These libraries
+usually come along with the curses library.  This allows you to create
+applications that that contain:
+    - multiple windows
+    - menus
+    - panels
+    - forms
+
+Windows can be managed independently, provide scrollability, and also be hidden.
+
+
+-------------------------------------------------------------------------------
+HELLO WORLD
+-------------------------------------------------------------------------------
+To use the ncurses library functions you must:
+    - include the ncurses header in your programs.
+    - use the -lncurses flag during compilation
+
+    #include <ncurses.h>
+    .
+    .
+    .
+
+    compile command: g++ -lncurses script.cpp -o script.o
+
+    // hello world example
+    #include <ncurses.h>
+
+    int main() {
+        initscr();            // start curses mode
+        printw("hello brah"); // print hello brah
+        refresh();            // print it on to the real screen
+        getch();              // wait for user input
+        endwin();             // end curses
+        return 0;
+    }
+
+
+INITSCR()
+-------------------------------------------------------------------------------
+This function initializes the terminal in curses mode.  To do any manipulation
+using the curses package, this has to be called first.  This function
+initializes the curses system and allocates memory for our present window
+(called stdscr) and some other data-structures.  After this is done, we can do a
+variety of initializations to customize our curses settings.
+
+PRINTW("SOME TEXT") & REFRESH()
+-------------------------------------------------------------------------------
+printw prints a string to the screen at the current y, x coordinats.  The
+default y, x coordinates are 0,0 which is the top left hand corner of the
+window.
+
+When we call printw, the data is actualyl written to an imaginary window which
+is not updated on the screen yet.  We need to call refresh() to tell ncurses to
+dump the contents of the imaginary screen.
+
+The reason for this is to allow the programmer to do multiple updates on the
+imaginary screen or windows and do a refresh once all his screen update is done.
+
+refresh() checks the window and updates ONLY the portion which has changed,
+which improves performance and offers greater flexibility.
+
+ENDWIN()
+-------------------------------------------------------------------------------
+endwin() frees the memory taken by the ncurses sub-system and puts the terminal
+in normal mode.  The function must be called after you are done with curses
+mode.
+
+Forgetting to call this function in your program could make your terminal behave
+unpredictably after your programs quits.
+
+
+-------------------------------------------------------------------------------
+INITIALIZATION FUNCTIONS
+-------------------------------------------------------------------------------
+These are functions which can be called after this initialization to customize
+our curses session.
+
+RAW() & CBREAK()
+-------------------------------------------------------------------------------
+Normally the terminal driver buffers the characters a user types until a new
+line or carriage return is encountered. But most programs require that the
+characters be available as soon as the user types them. The above two functions
+are used to disable line buffering. The difference between these two functions
+is in the way control characters like suspend (CTRL-Z), interrupt and quit
+(CTRL-C) are passed to the program. In the raw() mode these characters are
+directly passed to the program without generating a signal. In the cbreak() mode
+these control characters are interpreted as any other character by the terminal
+driver. I personally prefer to use raw() as I can exercise greater control over
+what the user does.
+
+ECHO() & NOECHO()
+-------------------------------------------------------------------------------
+Most interactive programs call noecho() at initialization and do echoing of
+characters in a controlled manner.
+
+KEYPAD()
+-------------------------------------------------------------------------------
+Enables the reading of function keys like F1, F2, arrows keys, etc.  Almost
+every interactive program enables this, as arrow keys are a major part of and
+UI.
+
+    keypad(stdscr, TRUE) enables this feature for regular screen (stdscr)
+
+
+-------------------------------------------------------------------------------
+OUTPUT FUNCTIONS
+-------------------------------------------------------------------------------
+There are three classes of functions which you can use to do output on a screen
+    - addch()
+        print single character with attributes
+    - printw()
+        print formatted output similar to printf()
+    - addstr()
+        print strings
+
+These functions can be used interchangeable and its a matter of style as to
+which class is used
+
+ADDCH()
+-------------------------------------------------------------------------------
+These functions put a single character into the current cursor location and
+advance the position of the cursor.  Characters are usually printed with some
+attributes.  Attributes can be bold, reverse video, etc...
+
+    addch(ch | A_BOLD | A_UNDERLINE);
+
+MVADDCH(), WADDCH(), MVWADDCH()
+-------------------------------------------------------------------------------
+mvaddch()
+    - moves the cursor to a given point, then print. mvaddch() is the
+      combination of: move(row, col); addch(ch);
+waddch()
+    - adds a character into the given window
+mvwaddch() - adds a character into the given window at a given set of coordinates PRINTW() & MVPRINTW() ------------------------------------------------------------------------------- printw() prints at the current cursor location
+mvprintw()
+    - moves the cursor to a position, then prints
+
+WPRINTW() & MVWPRINTW()
+-------------------------------------------------------------------------------
+print in the corresponding window given as an argument
+
+
+-------------------------------------------------------------------------------
+INPUT FUNCTIONS
+-------------------------------------------------------------------------------
+getch()
+    - read a single character from the terminal.
+scanw()
+    - get input form any location on the screen
+
+
+-------------------------------------------------------------------------------
+ATTRIBUTES
+-------------------------------------------------------------------------------
+    A_NORMAL        Normal display (no highlight)
+    A_STANDOUT      Best highlighting mode of the terminal.
+    A_UNDERLINE     Underlining
+    A_REVERSE       Reverse video
+    A_BLINK         Blinking
+    A_DIM           Half bright
+    A_BOLD          Extra bright or bold
+    A_PROTECT       Protected mode
+    A_INVIS         Invisible or blank mode
+    A_ALTCHARSET    Alternate character set
+    A_CHARTEXT      Bit-mask to extract a character
+    COLOR_PAIR(n)   Color-pair number n
+
+Can also use OR (|) to combine attributes
+
+    attron(A_REVERSE | A_BLINK)
+
+-------------------------------------------------------------------------------
+WINDOWS
+-------------------------------------------------------------------------------
+A window is reated by calling the function newwin() which dynamically allocates
+memory for a structure to manipulate the window and updates the structure with
+data regarding the window like its size, beginy, beginx, etc..
+
+newwin() returns a pointer to a structure WINDOW, which can be passed to window
+related functions like wprint(w), etc..  The window can be destroyed with
+delwin() which deallocates the memory associated with the window structure.
+
+A window cannot be seen unless you use the function box() to draw a border
+around the window.
+
+Here is a demo program that allows you to move a box around the screen using
+the arrow keys or hjkl:
+
+-------------------------------------------------------------------------------
+#include <ncurses.h>
+
+WINDOW *createNewWin(int height, int width, int startY, int startX);
+void destroyWin(WINDOW *localWin);
+
+int main() {
+    // start curses mode
+    initscr();
+
+    // line buffering disabled
+    cbreak();
+
+    // enable reading of keys
+    keypad(stdscr, true);
+    // suppress output (otherwise every hjkl key would output at the top of
+    // the stdscr)
+    noecho();
+
+    int height = 3;
+    int width = 10;
+    int startY = (LINES - height) / 2;
+    int startX = (COLS - width) / 2;
+
+    printw("Press 'q' to exit");
+    refresh();
+    WINDOW *myWin = createNewWin(height, width, startY, startX);
+    int ch;
+    while ((ch = getch()) != 'q') {
+        switch (ch) {
+        case KEY_LEFT:
+            destroyWin(myWin);
+            myWin = createNewWin(height, width, startY, --startX);
+            break;
+        case 'h':
+            destroyWin(myWin);
+            myWin = createNewWin(height, width, startY, --startX);
+            break;
+
+        case KEY_RIGHT:
+            destroyWin(myWin);
+            myWin = createNewWin(height, width, startY, ++startX);
+            break;
+        case 'l':
+            destroyWin(myWin);
+            myWin = createNewWin(height, width, startY, ++startX);
+            break;
+
+        case KEY_UP:
+            destroyWin(myWin);
+            myWin = createNewWin(height, width, --startY, startX);
+            break;
+        case 'k':
+            destroyWin(myWin);
+            myWin = createNewWin(height, width, --startY, startX);
+            break;
+
+        case KEY_DOWN:
+            destroyWin(myWin);
+            myWin = createNewWin(height, width, ++startY, startX);
+            break;
+        case 'j':
+            destroyWin(myWin);
+            myWin = createNewWin(height, width, ++startY, startX);
+            break;
+        }
+    }
+    endwin();
+
+    return 0;
+}
+
+WINDOW *createNewWin(int height, int width, int startY, int startX) {
+    WINDOW *localWin;
+    localWin = newwin(height, width, startY, startX);
+    box(localWin, 0, 0);
+    wrefresh(localWin);
+    return localWin;
+}
+
+void destroyWin(WINDOW *localWin) {
+    // erase the border (takes in the WINDOW pointer as well as 8 other args)
+    wborder(localWin, ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ');
+
+    wrefresh(localWin);
+    delwin(localWin);
+}
+
+-------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+MENUS LIBRARY
+-------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+

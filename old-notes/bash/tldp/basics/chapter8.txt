@@ -1,0 +1,86 @@
+Chapter 8 - Operators
+https://tldp.org/LDP/abs/html/ops.html
+-------------------------------------------------------------------------------
+### ARITHMETIC OPERATORS
++
+    plus
+-
+    minus
+*
+    multiplication
+/
+    division
+**
+    exponentiation
+%
+    modulo or mod (returns remainder of an integer division operation)
++=
+    plus-equals, increment variable by a constant
+-=
+    minus-equals, decrement a variable by a constant
+/=
+    slash-equal, divide a variable by a constant
+%=
+    mod-equal, remainder of dividing a variable by a constant
+
+### BITWISE OPERATORS
+Bitwise operators seldom make an appearance in shell scripts.  Their chief use
+seems to be manipulating and testing values read from ports or sockets.  "Bit
+flipping" is more relevant to compiled languages such as C and C++, which
+provide direct access to system hardware.
+<<
+    bitwise left shift (multiplies by 2 for each shift position)
+<<=
+    left-shift-equal
+>>
+    bitwise right shift (divides by 2 for each shift operation)
+>>=
+    right-shift-equal
+&
+    bitwise AND
+&=
+    bitwise AND-equal
+|
+    bitwise OR
+|=
+    bitwise OR-equal
+~
+    bitwise NOT
+^
+    bitwise XOR
+^=
+    bitwise XOR-equal
+
+### DOUBLE PARENTHESES CONSTRUCT (( .. ))
+The double-parentheses construct permits arthimetic expansion and evaluation.
+It also allows for C-style manipulation of variables in Bash
+
+    #!/bin/bash
+    (( a = 23 ))  #  Setting a value, C-style,
+                  #+ with spaces on both sides of the "=".
+    echo "a (initial value) = $a"   # 23
+
+    (( a++ ))     #  Post-increment 'a', C-style.
+    echo "a (after a++) = $a"       # 24
+
+    (( a-- ))     #  Post-decrement 'a', C-style.
+    echo "a (after a--) = $a"       # 23
+
+
+    (( ++a ))     #  Pre-increment 'a', C-style.
+    echo "a (after ++a) = $a"       # 24
+
+    (( --a ))     #  Pre-decrement 'a', C-style.
+    echo "a (after --a) = $a"       # 23
+
+    exit 0
+
+
+
+
+
+
+
+
+
+

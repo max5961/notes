@@ -1,0 +1,646 @@
+MONGODB
+-------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+SQL VS NO SQL DATABASES
+-------------------------------------------------------------------------------
+https://circleci.com/blog/sql-vs-nosql-databases/
+-------------------------------------------------------------------------------
+SQL stands for Structured Query Language.
+
+SQL databases are also known as RELATIONAL databases.  They are organized into a
+schema, which is an organization of rows and columns.
+
+NoSQL databases are also known as NON-RELATIONAL databases.  They have gained
+popularity in the past decade for their ability to handle large volumes of
+unstructured data.
+
+SQL DATABASES
+-------------------------------------------------------------------------------
+The SQL language is an ANSI (American National Standards Institute) standard.
+The advantage of writing ANSI-compatible SQL is that you can easily transfer
+scripts to another SQL database.
+
+Some popular SQL databases include:
+    - Oracle
+    - MySQL
+    - Microsoft SQL Server
+    - PostgreSQL
+
+In relational databases, you can (and generally should) normalize your data by
+not storing it redundantly.  In the past, storage was expensive and normalizing
+your data meant saving storage.
+
+SQL is robust which has its pros and cons.  On one hand, you always know the
+entities and values.  On the other hand, its not good at dealing with dynamic
+data.  SQL databases are generally fast and reliable
+
+
+NOSQL DATABASES
+-------------------------------------------------------------------------------
+A common misconception about NoSql databases is that the 'No' means that no SQL
+is used in the database.  The 'No' actually stands for NOT ONLY.
+
+There is also no single definition of a NoSql database.  There are actually four
+broad categories.  They are:
+    - Document stores
+    - Graph databases
+    - Key-value stores
+    - Wide-column data stores
+
+NoSQL databases are rarely interchangeable which is a downside in comparison to
+SQL databases.  NoSQL databases are also less robust, but they sacrifice that
+robustness for speed and scalability.
+
+
+NOSQL DOCUMENT STORES
+-------------------------------------------------------------------------------
+This is the most popular type of NoSQL database.  They look most like
+traditional SQL databases, except there is no schema and no normalization. You
+can store the same entity multiple times and with different values so its easy
+to make a mess out of things.
+
+Document stores can generally run on multiple servers, while SQL databases are
+usually tied to a single server.
+
+Popular document stores include MongoDB, DynamoDB, CouchBase, Firebase, and Cosmos
+DB.
+
+
+NOSQL GRAPH DATABASES
+-------------------------------------------------------------------------------
+The graph database is a specialized niche type of database.  The most common use
+case is a "people you may know" Facebook example.
+
+Graph databases are like Graph data structures.  They are comprised of NODES and
+EDGES.
+
+Imagine the Facebook example.  With a graph database, it takes significantly
+less time to track down friends of friends than it would with a SQL database.
+With a SQL database it would need to filter through billions of users in the
+case of Facebook, whereas with a graph data structure, its easy to "walk" the
+"edges".
+
+Popular graph databases are Neo4j, ArangoDB, and Cosmos DB
+
+
+NOSQL KEY-VALUE STORES
+-------------------------------------------------------------------------------
+The most straightforward NoSQL database.  It is what the name suggests.  Popular
+key-value store databases are Redis, Memcached, and Cosmos DB
+
+Key-value stores are not widely applicable, but are perfect for use cases such
+as caching and storing session data.
+
+
+NOSQL WIDE-COLUMN DATA STORES
+-------------------------------------------------------------------------------
+In a wide-column data store database, a key holds access to columns and each
+column can consist of billions of values.
+
+Wide-column data stores are useful for storing up to petabytes of data.
+
+Popular databases of this type include Cassandra, HBase, Bigtable, and Cosmos
+DB.
+
+
+OTHER NOSQL DATABASES
+-------------------------------------------------------------------------------
+NoSQL includes other types of databases sucha s databases centered around flat
+text files.
+
+Even search engines are a kind of NoSQL database as they specialize in finding
+data content and typically suppport complex search queries, full-text search,
+result ranking and grouping, and are highly scalable.  Elasticsearch, Solr, and
+Splunk are popular searche ngines.
+
+Cosmos DB is a cloud database running in Azure and does just about everything
+(it was mentioned in all of the above NoSQL categories).  There are several
+multi-model databases that can store data in multiple ways such as Amazon's
+DynamoDB.
+
+However, there are limitations to multi-model databases.  You can use the
+different approaches in a single database, but you can create multiple instances
+and sue a different method on each.
+
+
+NEWSQL DATABASES
+-------------------------------------------------------------------------------
+Some SQL databases offer NoSQL perks while still being SQL.  For example
+databases such as Oracle and SQL Server enable you to store DYNAMIC JSON and use
+indices and filter queries on those values.
+
+Snowflake is another cloud db that makes SQL more scalable while still remaining
+SQL based.
+
+
+-------------------------------------------------------------------------------
+MONGODB STRUCTURE
+-------------------------------------------------------------------------------
+MongoDB consists of databases, which contain collections, which contain
+documents.  Documents look like plain javascript objects.
+
+    db ----> collections ----> documents
+
+Because there is no schema in MongoDB, documents do not need to have the same
+shape.  For example, here is an illustration representing a sample db:
+
+###################
+#  MongoDB Server #
+###################
+|
+|
+----- db-1
+      |
+      |
+      |--------- Collection-1
+      |          |
+      |          |
+      |          ----- Document-1: { name: "John" }
+      |          |
+      |          ----- Document-2: { firstName: "John", lastName: "Smith" }
+      |
+      |
+      ---------- Collection-2
+                 |
+                 |
+                 ----- Document-1: { ... }
+
+
+
+Documents in MongoDB are stored as BSON (Binary JSON) which allows for storage
+of binary data like images, audio files, or any binary content.  BSON also
+allows for storage of regex and additional numeric types like int32, double,
+etc...
+
+The syntax for documents is almost exactly the same as an object literal in
+JavaScript.  In your js file you could create an object and then pass it to the
+insertOne method.
+
+    const newUser = {
+        name: "John",
+        age: 25
+    }
+
+    db.collection("users").insertOne(newUser);
+
+Schemas are optionally defined outside of the database and are the prototypes
+that a document adheres to.  They exist only as abstractions to make interacting
+with the database in a language like JavaScript more structured.  In such a way,
+you could think about Mongo databases as arrays of Collections and Collections
+as arrays of different Schemas, even though this is only loosely accurate.
+
+Schemas can reference other schemas (be composed of other Schemas).
+
+When you define Schemas in your application, that means you are using an ODM
+(Object Document Mapper) or an ORM (Object Relational Mapper) in relation
+databases like SQL.  Again, these are optional abstractions that can help
+development, but can come at a cost of performance.
+
+Mongoose is a library that is used to build and manage Schemas for MongoDB.  It
+provides abstractions that validate data and useful middleware.
+
+On a side note, when we talk about the MVC design pattern in the context of a
+full stack Nodejs application we are more specifically talking about:
+
+    Model:        Schemas
+    View:         HTML Templates (or the frontend in general)
+    Controller:   Route handlers (how to handle server Requests)
+
+
+MONGOOSE
+-------------------------------------------------------------------------------
+IMPORTING:
+
+    npm install mongoose
+
+    import mongoose from "mongoose";
+
+DEFINING A SCHEMA:
+
+    // Get the Schema constructor
+    const { Schema } = mongoose;
+
+    const SomeModelSchema = new Schema{{
+        a_string: String, // String as in the String constructor
+        a_date: Date,
+    }}
+
+CREATING A MODEL FROM THE SCHEMA:
+
+    const SomeModel = mongoose.model("SomeModel", SomeModelSchema);
+
+NOTE: When defining a Schema, Mongoose uses constructors for type validation.
+You might think this means that underneath the hood Mongoose is doing something
+like: if (someDate instanceof Date) { ... } for validation.  However, we can
+infer that this is NOT true as Mongoose does NOT allow you to use a class
+constructor as a type.  Instead of using a JavaScript constructor as a type,
+Mongoose does allow you to use another Schema to define the type for a certain
+field.
+
+MONGOOSE SCHEMA FIELD TYPES
+-------------------------------------------------------------------------------
+The keys in Mongoose Schemas are also known as fields.  A field's type can be
+object literals, primitive constructors, other Schemas, or a combination of all
+of these.
+
+const schema = new Schema({
+    // Primitive Types
+    name: String,
+    binary: Buffer,
+    living: Boolean,
+
+    // Fields with Options
+    updated: { type: Date, default: Date.now() },
+    age: { type: Number, min: 18, max: 65, required: true },
+
+    // Special Types
+    mixed: Schema.Types.Mixed,  // Can store any type of data
+    _id: Schema.Types.ObjectId, // Can store MongoDb ObjectIds
+
+    // Arrays
+    array: [], // Can store an array of ANY type
+    ofString: [String], // Array of Types
+
+    // Nested Subdocuments
+    nested: { stuff: { type: String, lowercase: true, trim: true }},
+});
+
+NOTE: There is a small but significant difference between the 'fields with
+options' and 'nested subdocuments' types.  The fields with options reads:
+schema.type OR schema.default.  The nested subdocument reads: nested.stuff.type
+where nested.stuff is the subdocument (which also has multiple options)
+
+
+MONGODB ATLAS
+-------------------------------------------------------------------------------
+Atlas is MongoDB's multi-cloud developer data platform.  At its core it is a
+Database as a service (DBaaS).  This means that Atlas handles the database and
+its lifecycles behind the scenes.
+
+In MongoDB, data is stored on more than one server and this ensures data
+redundancy and high availability.
+
+
+MONGOSH (MONGODB SHELL)
+-------------------------------------------------------------------------------
+To interact with your databases you can run the command 'mongosh' to open the
+mongodb shell.
+
+
+BASIC COMMANDS:
+-------------------------------------------------------------------------------
+show dbs
+    View your databases
+
+use <database name>
+    Start editing a specific database. Even if the database is not yet created
+    (not yet listed in show dbs), this command will create a database by that
+    name for you.  The db will not show in 'show dbs' until you add data to it
+
+show collections
+    Once in a database, shows the collections in a given database.
+
+db
+    Access the current database you are inside of.  db is essentially an object
+    with many functions to be able to interact with your db.  Running 'db' by
+    itself however just lists the name of the current database you're inside of.
+
+db.dropDataBase()
+    Once you are 'using' a database, this command deletes the entire database
+
+exit
+    exit the mongo shell
+
+cls
+    clear mongo shell screen
+
+
+BASIC INSERT COMMANDS:
+-------------------------------------------------------------------------------
+db.<collection>.find()
+    Lists the data in a given collection in a given database
+
+    NOTE: This is not an insert command, but helpful for checking to make sure
+    you have successfully inserted something
+
+db.<collection>
+    Create or access a collection inside of the db you are in
+
+db.<collection>.insertOne()
+    The function accepts a javascript style object
+
+        db.users.insertOne({ name: "John" })
+
+    insertOne() will actually create a _id property for every object it inserts
+
+db.<collection>.insertMany()
+    The same as insertOne, but instead accepts an array of objects
+
+
+BASIC QUERY COMMANDS:
+-------------------------------------------------------------------------------
+NOTE: Some of these commands can be chained.  For example:
+    db.users.find().skip(1).limit(2)
+
+db.<collection>.find()
+    Lists every document in a collection.
+
+    NOTE: db.find() will not list every document in a database. The find method
+    applies to collections, not dbs.
+
+db.<collection>.find({<key>: <value>})
+    Finds documents with the matching key and value.  The argument in this case
+    is called a QUERY FILTER.
+
+db.<collection>.find({<key>: <value>}, {<key1>: 1, <key2}: 1})
+    Finds a document with the matching key and value from the first argument and
+    then returns only the keys listed in the second argument.  The _id field
+    will be returned automatically, but to prevent this you can pass in
+    { _id: 0 } to the object in the second argument.
+
+    If you want to get all fields EXCEPT for a certain field, pass in just
+    { <key>: 0 } to the second argument.
+
+db.<collection>.find().limit( <number> )
+    Limits the query results to the first <number> results
+
+db.<collection>.find().sort( { <property>: <order> } )
+    Sorts a query based on the <property> variable.  The order variable is either 1
+    or -1 and correlates to the sorting order.
+
+    NOTE: Lets say that <property> didn't exist on some documents.  Sort does
+    not filter those that don't match with <property>.  It still includes them
+    in the results.
+
+    You can actually pass in more than a single property to search for as well.
+    For example: db.users.find().sort({ age:-1, name: 1 })
+
+db.<collection>.find().skip(<number>)
+    Skips the first <number> entries in a query
+
+db.<collection>.findOne
+    The same as the find method, but returns just the first result
+
+db.<collection>.countDocuments
+    Takes in an argument just like find, but instead of returning the documents,
+    just return the number of documents that match the query
+
+QUERYING NESTED FIELDS:
+
+    db.users.find({ "address.street": "123 Main St" });
+
+
+
+COMPLEX QUERIE COMMANDS:
+-------------------------------------------------------------------------------
+These next commands make use of QUERY OPERATORS / QUERY SELECTORS.  These are
+keywords prefixed with $ that help us conditionally select documents.
+
+db.users.find({name: { $eq: "Sally" }})
+    Returns all documents in collection 'users' where the name is equal to
+    'Sally'
+
+db.users.find({name: { $ne: "Sally" }})
+    Returns all documents in collection 'users' where the name is NOT equal to
+    'Sally'
+
+db.users.find({ age: { $gt: 13 }})
+    Returns all documents in collection 'users' where the age is greater than 13
+
+db.users.find({ age: { $gte: 13 }})
+    Returns all documents in collection 'users' where the age is greater than or
+    equal to 13
+
+Same rules apply for $lt and $lte (less than and less than or equal to)
+
+db.users.find({ name: {$in: ["Kyle", "Sally"]}})
+    Returns all documents where the name is either "Kyle" or "Sally".
+
+db.users.find({ name: {$nin: ["Kyle", "Sally"]}})
+    Returns all documents where the name is NOT "Kyle" or "Sally".
+
+db.users.find({age: { $exists: true }})
+    Returns all documents that have an age property.  $exists: false for all
+    documents that do NOT have an age property
+
+    NOTE: $exists: true will still return objects that have the tested
+    property even if the value is 'null'.  $exists does not check for
+    truthiness of the value, only if the property exists.
+
+You can combine query selectors with as well. For example:
+
+    db.users.find({age: {$gte: 20, $lte: 40}})
+
+The same thing as: if (age >= 20 && age <= 40) { ... }
+
+    db.users.find({age: {$gte: 20, $lte: 40}, name: "Sally"})
+    // if (age >= 20 && age <= 40 && name === "Sally") { ... }
+
+db.users.find({ $and: [{age: 26}, {name: "Kyle"}] })
+    // if (age === 26 && name === "Kyle") { ... }
+
+Generally, you don't need to use the $and operator too often because you can do
+the same thing by combining query operators.  However, you can't simply combine
+query operators to get 'or' functionality.  Therefore, the $or operator is
+commonly used:
+
+    db.users.find({ $or: [ {age: {$lte: 20}}, { name: "Kyle" } ] })
+    // if (age <= 20 || name === "Kyle") { ... }
+
+The $not operator inverts a boolean evaluation
+
+    db.users.find({ age: { $not: { $lte: 20 } } });
+    // if (!age <= 20) { ... }
+
+There is a subtle difference in how the $not operator works.  The above example
+is logically the same as 'age > 20', but if we ran that query with just the $gt
+operator, we would not return any documents where 'age' is not defined.  However,
+with the $not operator, we return documents that don't have 'age' defined.
+
+The $expr operator can be used to compare two fields.  In the example below, we
+use $expr to query users who have a debt greater than their balance.  Notice how
+the the debt and balance fields are prefixed with $ within quotation marks.
+This is how we access fields (columns)
+
+    db.users.find({$expr: { $gt: ["$debt", "$balance"] }})
+
+ALL QUERY OPERATORS:
+-------------------------------------------------------------------------------
+https://www.mongodb.com/docs/manual/reference/operator/query/
+
+    COMPARISON:
+        $eq:    equal to
+        $ne:    not equal to
+        $gt:    greater than
+        $gte:   greater than or equal to
+        $lt:    less than
+        $lte:   less than or equal to
+        $in:    in an array
+        $nin:   not in an array
+
+    LOGICAL:
+        $and:   AND
+        $or:    OR
+        $not:   NOT
+        $nor:   NOR
+
+    ELEMENT:
+        $exists:    Matches documents with the specified field
+        $type:      Matches documents with the specified field type
+
+There are also more operators for, ARRAYS, EVALUATIONS, BITWISE, and META.
+
+
+UPDATING DATA
+-------------------------------------------------------------------------------
+db.<collection>.updateOne()
+    Just like the find command, updateOne accepts a QUERY FILTER as the first
+    argument and the second argument is an UPDATE DOCUMENT.
+
+    However, in order to update a document, you must use ATOMIC OPERATORS.  In
+    the case of the example below, the $set operator is the atomic operator.
+
+        db.users.updateOne({age: 26}, {$set: {age: 27}})
+
+    This example is not very practical...we just updated the first user who is
+    age 26 in our database, so we weren't very selective in who to update.  The
+    updateOne operator is commonly used with the _id field.
+
+        db.users.updateOne({_id: ObjectId('6668529fb57607215ba26a13')}, {$set:{name: "BRODUDE" }})
+
+    In order for the updateOne method to be useful, the query filter must be
+    able to select a field that has only unique values.
+
+db.<collection>updateMany()
+    Just like updateOne, but instead of only updating the first match, it
+    updates all matching documents.
+
+$set
+    sets the fields in the query filter result to the update document argument
+    fields
+
+$inc
+    Increment all users with an age of 25 by 5 years
+
+    db.users.updateMany({age: 25}, {$inc: {age: 5}})
+
+$rename
+    Find all users with an age property and rename the age property to howOld
+    instead.
+
+    db.users.updateMany({age: { $exists: true} }, { $rename: { age: "howOld" } })
+
+$unset
+    Find the user with the given _id and remove the age property
+
+    db.users.updateOne({_id: ObjectId('6668529fb57607215ba26a13')}, { $unset: {age: "" } })
+
+$push
+    Push to a given array in a selection
+
+    db.users.updateOne({_id: ObjectId('6668529fb57607215ba26a13')}, { $push: {hobbies: "Biking" } })
+
+    NOTE: It doesn't matter if the query results contain a hobbies array or not.
+    If it contains one, it will be pushed, if not it will create an array then
+    push.
+
+$pull
+    The exact opposite of $push.  Removes a value from anarray in a given
+    selection
+
+    db.users.updateOne({_id: ObjectId('6668529fb57607215ba26a13')}, { $pull: {hobbies: "Biking" } })
+
+    NOTE: If pulling the value creates an empty array, mongo will NOT remove the
+    property.  The value will just be an empty array.
+
+db.<collection>.replaceOne
+    Replaces an entire document (1st arg) with the 2nd argument document.
+    Unlike updateOne/updateMany, we aren't simply updating fields, but instead
+    we are replacing the entire document.
+
+    db.users.replaceOne({name: "BRODUDE" }, {firstName: "STILL BRODUDE"})
+
+    You might be asking yourself, since I said it replaces the entire
+    document..., does it replace the _id field?  The answer is no, it keeps the
+    _id field the same but replaces everything else with the replacement
+    document.
+
+
+DELETING DATA
+-------------------------------------------------------------------------------
+db.<collection>.deleteOne
+    Takes in a query filter as an argument just as find does and removes the
+    document from the database
+
+    db.users.deleteOne({_id: ObjectId('6668529fb57607215ba26a13')})
+
+db.<collection>.deleteMany
+    Takes in a query filter as an argument and deletes all results from the
+    query
+
+    db.users.deleteMany({ age: { $exists: false }})
+
+    The above example deletes all users which do not have an age property
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

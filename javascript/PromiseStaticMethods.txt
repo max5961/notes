@@ -1,0 +1,24 @@
+List the 6 Promise static methods:
+.all, .allSettled, .race, .any, .resolve, .reject
+
+Describe Promise.all
+All or nothing.  Accepts an array of Promises, resolves when all resolve, rejects as soon as one rejects
+
+Describe Promise.allSettled
+Accepts an array of Promises, resolves when all settle regardless of being fulfilled or rejected.  Result is an array of Promise states
+
+Describe Promise.race
+Accepts an array of Promises, resolves when the first Promise settles.  Result is the 'result' or 'reason' of the first to settle.
+
+Describe Promise.any
+Accepts an array of Promises.  Ignores rejected Promises and resolves when the first Promise resolves.
+
+In Promise.any, if all Promises reject, what kind of value is the 'reason' for the rejection.
+AggregateError, a special Error object that stores all Promise errors in an array in its error property
+
+Describe Promise.resolve
+same as: const resolvedPromise = new Promise(resolve => resolve(5));
+
+Describe Promise.reject
+same as: const rejectedPromise = new Promise((_, reject) => reject(new Error(5))
+
