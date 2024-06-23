@@ -1,0 +1,190 @@
+{
+    "fileName": "TypeScript",
+    "sections": [
+        {
+            "name": "Intro",
+            "questions": [
+                {
+                    "type": "qa",
+                    "q": "Explain the term 'structural type system'",
+                    "a": "One of TypeScripts core principles is that type checking focuses on the \"shape\" that values have rather than ONLY their declared types.  An entirely different type can be used in place of another type, so long as they have matching shapes."
+                },
+                {
+                    "type": "qa",
+                    "q": "Structural typing is also sometimes referred to as what?",
+                    "a": "\"duck typing\".  (If it quacks like a duck, it can be treated as a duck)"
+                },
+                {
+                    "type": "qa",
+                    "q": "Is there any difference in the way objects and classes conform to shapes?",
+                    "a": "No"
+                }
+            ]
+        },
+        {
+            "name": "Basics",
+            "questions": [
+                {
+                    "type": "mc",
+                    "q": "Plain JavaScript is a:",
+                    "a": "b",
+                    "choices": [
+                        "Statically Typed Language",
+                        "Dynamically Typed Language"
+                    ]
+                },
+                {
+                    "type": "mc",
+                    "q": "TypeScript is a static type checker system which means that it performs type-checks at:",
+                    "a": "b",
+                    "choices": [
+                        "Run-time",
+                        "Compile-time"
+                    ]
+                },
+                {
+                    "type": "mc",
+                    "q": "TypeScript is a:",
+                    "a": "a",
+                    "choices": [
+                        "Statically Typed Language",
+                        "Dynamically Typed Language"
+                    ]
+                },
+                {
+                    "type": "qa",
+                    "q": "How to download the TypeScript compiler?",
+                    "a": "global: sudo npm install -g typescript ...local: npm install --save-dev typescript"
+                },
+                {
+                    "type": "qa",
+                    "q": "How to compile TypeScript code?",
+                    "a": "tsc path/to/script.ts"
+                },
+                {
+                    "type": "qa",
+                    "q": "What does the this command do? tsc --noEmitOnError script.ts",
+                    "a": "Without the --noEmitOnError flag, the typescript compiler would still emit a script.js file in the case of a type-check error. The flag prevents code with errors from creating or over-writing the script.js file"
+                },
+                {
+                    "type": "qa",
+                    "q": "What is a type annotation?",
+                    "a": "Adding a type to some variable.  Example: const someVar: string = \"hello world\"; // someVar: string is the type annotatioin"
+                },
+                {
+                    "type": "qa",
+                    "q": "Can type annotations ever change the runtime behavior of a program?",
+                    "a": "NEVER.  They exist only for the TypeScript compiler"
+                },
+                {
+                    "type": "mc",
+                    "q": "The ts compiler compiles to which version of ECMAScript by default?",
+                    "a": "b",
+                    "choices": [
+                        "ES1 (1997)",
+                        "ES3 (1999)",
+                        "ES5 (2009)",
+                        "ES6 (2015)"
+                    ]
+                },
+                {
+                    "type": "qa",
+                    "q": "The --target flag for the 'tsc' command does what?",
+                    "a": "Changes the version of JS it compiles to.  'tsc --target es2015 script.ts' compiles to ECMAScript 2015"
+                },
+                {
+                    "type": "qa",
+                    "q": "Explain the --noImplicitAny flag",
+                    "a": "When you don't specify a type and TypeScript is unable to infer it from context, the compiler will default the type to 'any'.  If the compiler flag, --noImplicitAny is true, this will raise an error."
+                },
+                {
+                    "type": "mc",
+                    "q": "TypeScript always checks that you have passed the correct number of args to a function:",
+                    "a": "a",
+                    "choices": [
+                        "true",
+                        "false"
+                    ]
+                },
+                {
+                    "type": "qa",
+                    "q": "How to define optional properties in object types?",
+                    "a": "type MyType = {x?:string}"
+                },
+                {
+                    "type": "qa",
+                    "q": "Clean way of using a 'possibly null/undefined' variable?",
+                    "a": "obj.name?.toUpperCase();  // this is also valid JS"
+                },
+                {
+                    "type": "qa",
+                    "q": "What does the --strictNullChecks flag do?",
+                    "a": "If false, ts will not raise the 'someIdentifier' is possibly null error during compile time."
+                }
+            ]
+        },
+        {
+            "name": "Narrowing",
+            "questions": [
+                {
+                    "type": "qa",
+                    "q": "What are \"type guards\"?",
+                    "a": "Conditional checks which are used to narrow types"
+                },
+                {
+                    "type": "qa",
+                    "q": "What is \"narrowing\"?",
+                    "a": "The process of refining types to be more specific than what they were originally declared as."
+                },
+                {
+                    "type": "qa",
+                    "q": "The 'typeof' operator returns 8 possible strings in both js and ts.  What are they?",
+                    "a": "\"string\", \"number\", \"bigint\", \"boolean\", \"symbol\", \"undefined\", \"object\", \"function\""
+                },
+                {
+                    "type": "qa",
+                    "q": "What are the seven primitive data types?",
+                    "a": "String, Number, BigInt, Boolean, Null, Undefined, Symbol"
+                },
+                {
+                    "type": "qa",
+                    "q": "Are Objects and/or Functions primitive data types?",
+                    "a": "No, but the 'typeof' operator may return \"object\" or \"function\" as a possible type in addition to the other 7 primitive data types"
+                },
+                {
+                    "type": "qa",
+                    "q": "Why does the 'typeof' operator not return 'null'?",
+                    "a": "null is considered to be of type 'object' in JavaScript, even though it is a 'falsey' value"
+                },
+                {
+                    "type": "qa",
+                    "q": "What is a 'discriminated union'?",
+                    "a": "When every type in a union contains a common property with literal types.  The properties must have literal types or else there is no way to narrow out the union members."
+                },
+                {
+                    "type": "qa",
+                    "q": "Describe the 'never' type:",
+                    "a": "In cases where narrowing has reduced all possibilities, TypeScript uses a 'never' type to represent a state which should not exist"
+                }
+            ]
+        },
+        {
+            "name": "More On Functions",
+            "questions": []
+        },
+        {
+            "name": "Object Types",
+            "questions": []
+        },
+        {
+            "name": "Everyday Types",
+            "questions": [
+                {
+                    "type": "qi",
+                    "q": "Use a type assertion to assert that the return type of the RHS of this expression as HTMLCanvasElement: const canvas = document.getElementById(\"canvas\");",
+                    "a": "const canvas = document.getElementById(\"canvas\") as HTMLCanvasElement;"
+                }
+            ]
+        }
+    ]
+}

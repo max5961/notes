@@ -1,0 +1,50 @@
+{
+    "fileName": "JavaScript",
+    "sections": [
+        {
+            "name": "this",
+            "questions": [
+                {
+                    "type": "qa",
+                    "q": "Where do NON-ARROW functions recieve their 'this' from?",
+                    "a": "From the context in which they are called. In 'someObject.someMethod()', some method recieves 'this' from someObject"
+                },
+                {
+                    "type": "qa",
+                    "q": "How do arrow functions utilize 'this'?",
+                    "a": "Arrow functions can UTILIZE 'this' from the lexical context from which the arrow function was defined in."
+                },
+                {
+                    "type": "qa",
+                    "q": "What is the 'this' value of a standalone NON-ARROW function in 'STRICT' mode?",
+                    "a": "undefined"
+                },
+                {
+                    "type": "qa",
+                    "q": "What is the 'this' value of a standalone NON-ARROW function in 'NON-STRICT' mode?",
+                    "a": "If there is a global object, 'this' will be the global object's 'this'.  In the browser this may be the 'window' object."
+                },
+                {
+                    "type": "qa",
+                    "q": "Explain Function.prototype.bind",
+                    "a": "Returns an entirely new function that has a 'this' bound to it from the donor object which is passed in as a parameter.  Ex: const boundFn = obj.Fn.bind(obj);"
+                },
+                {
+                    "type": "qa",
+                    "q": "Explain Function.prototype.call",
+                    "a": "Calls a function with the 'this' context from the donor object passed in as an argument. Ex: func.call(obj);"
+                },
+                {
+                    "type": "qa",
+                    "q": "What are 'constructor functions'?",
+                    "a": "Any non-arrow function.  Use 'this' within the function body to set the prototype of the new instance returned by the 'new' keyword.  Ex: const newObj = new Obj();"
+                },
+                {
+                    "type": "qa",
+                    "q": "What are 'factory functions'?",
+                    "a": "Simply a function that explicitly returns an object (presumably an object with properties AND methods)"
+                }
+            ]
+        }
+    ]
+}

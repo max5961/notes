@@ -1,0 +1,401 @@
+{
+    "fileName": "CPlusPlus",
+    "sections": [
+        {
+            "name": "Intro",
+            "questions": [
+                {
+                    "type": "qa",
+                    "q": "What is a function?",
+                    "a": "A function is a group of code statements that performs a task and can be executed when called by its name."
+                },
+                {
+                    "type": "qa",
+                    "q": "What is the name for this ( // ) type of comment?",
+                    "a": "Line comment"
+                },
+                {
+                    "type": "qa",
+                    "q": "What is the name for this ( /* */ ) type of comment?",
+                    "a": "Block comment"
+                },
+                {
+                    "type": "qa",
+                    "q": "What is a statement?",
+                    "a": "A complete line of code which ends in a ; and performs some action."
+                },
+                {
+                    "type": "qa",
+                    "q": "What is an expression?",
+                    "a": "Any segment of code which EVALUATES to something.  Expressions produce a value"
+                },
+                {
+                    "type": "qa",
+                    "q": "What is the main difference between expressions and statements?",
+                    "a": "Statements DO something whereas expressions EVALUATES to something"
+                },
+                {
+                    "type": "qa",
+                    "q": "Operator vs Operand?",
+                    "a": "Operators are used to operate on identifiers and constants.  Operands are the values operators operate on"
+                },
+                {
+                    "type": "qa",
+                    "q": "Concisely describe a variable.",
+                    "a": "A portion of memory to store a value.  Each variable needs a name which is called an 'identifier' to distinguish it from others."
+                },
+                {
+                    "type": "qi",
+                    "q": "How many bits in a byte?",
+                    "a": "8"
+                },
+                {
+                    "type": "mc",
+                    "q": "How much memory does a 'char' type occupy?",
+                    "a": "a",
+                    "choices": [
+                        "8 bits (1 byte)",
+                        "16 bits (2 bytes)",
+                        "32 bits (4 bytes)",
+                        "64 bits (8 bytes)"
+                    ]
+                },
+                {
+                    "type": "mc",
+                    "q": "Order the 3 floating point types from least to most precise",
+                    "a": "b",
+                    "choices": [
+                        "double, long double, float",
+                        "float, double, long double",
+                        "float, long double, double"
+                    ]
+                },
+                {
+                    "type": "qa",
+                    "q": "Explain strongly vs weakly typed.",
+                    "a": "STRONGLY: Every variable must be declared with a type before its first use.  WEAKLY: Variables are not or do not need to be declared with a type"
+                },
+                {
+                    "type": "qa",
+                    "q": "Explain statically vs dynamically typed.",
+                    "a": "STATICALLY: Type-errors are checked during compile-time, ensuring safer runtime execution.  DYNAMICALLY: Compiler does not type-check.  Types are checked at runtime which allows for more flexibility at the cost of increased risk."
+                },
+                {
+                    "type": "qa",
+                    "q": "chars vs std::string quoting",
+                    "a": "chars: single quotes, std::string: double quotes"
+                },
+                {
+                    "type": "qa",
+                    "q": "What are preprocessor definitions?",
+                    "a": "Allows for textual substitution.  '#define identifier replacement' replaces every instance of identifier with the literal chars (not value) of the literal chars of the replacement"
+                },
+                {
+                    "type": "qa",
+                    "q": "What does the prefix increment/decrement do?",
+                    "a": "increment, then assign"
+                },
+                {
+                    "type": "qa",
+                    "q": "What does the postfix increment/decrement do?",
+                    "a": "assign, then increment/decrement"
+                },
+                {
+                    "type": "qa",
+                    "q": "How to get the size in memory of a type?",
+                    "a": "Use the 'sizeof' operator. int x = sizeof(char)"
+                },
+                {
+                    "type": "qa",
+                    "q": "What is a compound statement?",
+                    "a": "A group of statements, each terminated by ; and enclosed within a {} block"
+                },
+                {
+                    "type": "qa",
+                    "q": "What does the keyword 'using' do in regards to namespaces?",
+                    "a": "Introduces a namespace into the current declarative region, (such as a block) so that you don't need to use the scope resolution operator ::"
+                },
+                {
+                    "type": "qa",
+                    "q": "What is static storage?",
+                    "a": "The storage for variable with global or namespace scope is allocated for the entire duration of the program and is called static storage"
+                },
+                {
+                    "type": "qa",
+                    "q": "What is automatic storage?",
+                    "a": "The storage for local variables (those declared within a block).  The location in memory is used only for that block, then is freed automatically."
+                },
+                {
+                    "type": "qa",
+                    "q": "Variables with static storage that are left uninitalized are initialized to what?",
+                    "a": "They are automatically initialized to zero."
+                },
+                {
+                    "type": "qa",
+                    "q": "Variables with automatic storage that are left uninitialized are initialized to what?",
+                    "a": "They have an undetermined value such as: 779647075"
+                },
+                {
+                    "type": "qa",
+                    "q": "Each memory cell contains how many bytes (and bits)?",
+                    "a": "1 byte (8 bits)"
+                }
+            ]
+        },
+        {
+            "name": "Arrays",
+            "questions": [
+                {
+                    "type": "qa",
+                    "q": "What is an array?",
+                    "a": "A series of elements of the same type placed in contiguous memory locations and can be accessed by indexing its unique identifer."
+                },
+                {
+                    "type": "qa",
+                    "q": "What does contiguous mean?",
+                    "a": "Sharing a common border, or next to each other in sequence"
+                },
+                {
+                    "type": "qa",
+                    "q": "What is a null character?",
+                    "a": "\\0"
+                },
+                {
+                    "type": "qa",
+                    "q": "What is a null terminated character sequence?",
+                    "a": "An array of type char that is terminated with a null character '\\0'"
+                }
+            ]
+        },
+        {
+            "name": "Pointers",
+            "questions": [
+                {
+                    "type": "qa",
+                    "q": "What is an 'lvalue'?",
+                    "a": "A 'locator value'.  An object that occupies some identifiable location in memory."
+                },
+                {
+                    "type": "qa",
+                    "q": "What is an 'rvalue'?",
+                    "a": "A 'read value'.  An object that does NOT have a stable/long term memory address but is still stored temporarily."
+                },
+                {
+                    "type": "qa",
+                    "q": "What is the 'LHS'?",
+                    "a": "The 'left hand side' of an assignment statement.  Typically is a locator value, because it is being assigned."
+                },
+                {
+                    "type": "qa",
+                    "q": "What is the 'RHS'?",
+                    "a": "The 'right hand side' of an assignment statement.  Can either be an lvalue or an rvalue depending on the context."
+                },
+                {
+                    "type": "qa",
+                    "q": "What is a parameter?",
+                    "a": "Parameters are variables declared in a function parameter list when the function is DECLARED.  They will be assigned to the arguments passed into the function when the function is called."
+                },
+                {
+                    "type": "qa",
+                    "q": "What is an argument?",
+                    "a": "Variables which are passed into a function when said function is CALLED."
+                },
+                {
+                    "type": "qi",
+                    "q": "Declare an int pointer 'x', which points to the address of 'y'.  (dont forget the ;)",
+                    "a": "int *x = &y;"
+                },
+                {
+                    "type": "qa",
+                    "q": "What is the * operator called when used in an expression? For example: *x = 10;",
+                    "a": "It is the dereference operator, which means it accesses the value which it points to."
+                },
+                {
+                    "type": "qa",
+                    "q": "Explain this code segment in psuedocode (LHS dereference operator): *ptr = 5;",
+                    "a": "The value stored at the memory address 'ptr' points is reassigned to the rvalue 5"
+                },
+                {
+                    "type": "qa",
+                    "q": "Explain this code segment in psuedocode (RHS dereference operator): int x = *ptr;",
+                    "a": "int 'x' is equal to the value stored at the memory address that 'ptr' points to."
+                },
+                {
+                    "type": "qa",
+                    "q": "When a function parameter includes a pointer it expects what to be passed in its place for an argument?",
+                    "a": "An address because that is how pointers are initialized.  Remember that the value of a pointer without the dereference operator is simply the address.  So you can pass in either &someVar (the address of someVar) or somePointer (no dereference operator)"
+                },
+                {
+                    "type": "qa",
+                    "q": "What does the & operator mean in an expression?",
+                    "a": "The 'address-of' its operand"
+                },
+                {
+                    "type": "qa",
+                    "q": "Explain in psuedocode (LHS & operator): int &ref = x;",
+                    "a": "Define 'ref' as a 'reference to int types' and assign it to 'x'.  Modifying ref now modifies x and vice-versa.  They are aliases of each other"
+                },
+                {
+                    "type": "qa",
+                    "q": "Define an int rvalue reference 'ref' to rvalue 5.  (don't forget the ;)",
+                    "a": "int &&ref = 5;"
+                },
+                {
+                    "type": "qa",
+                    "q": "* operator when declaring a pointer?",
+                    "a": "Declares the type as a pointer (expects the RHS to be an address)"
+                },
+                {
+                    "type": "qa",
+                    "q": "* operator after a pointer has been declared?",
+                    "a": "The 'dereference' operator. Used to modify and read the value stored at the memory address the pointer points to."
+                },
+                {
+                    "type": "qa",
+                    "q": "What will happen if you try to read or operate on the value of a nullptr.",
+                    "a": "You will recieve a 'segmentation fault' error and the program was terminate."
+                },
+                {
+                    "type": "qa",
+                    "q": "What are the two keywords native to C++ to create and delete memory?",
+                    "a": "'new' and 'delete' (new[] and delete[] for arrays)"
+                },
+                {
+                    "type": "qa",
+                    "q": "Why do tree-like data structures rely on dynamic memory?",
+                    "a": "The chained objects which comprise the data structure as a whole need to persist beyond the lifecycle of the block in which they were created."
+                }
+            ]
+        },
+        {
+            "name": "Dynamic Memory",
+            "questions": [
+                {
+                    "type": "qa",
+                    "q": "Dynamic memory is stored on the:",
+                    "a": "heap"
+                },
+                {
+                    "type": "qa",
+                    "q": "LOCAL variables using automatic memory are stored on the:",
+                    "a": "stack"
+                },
+                {
+                    "type": "qa",
+                    "q": "Where are STATIC, GLOBAL, and NAMESPACE variables that use automatic memory stored?",
+                    "a": "The data segment (aka static memory)"
+                },
+                {
+                    "type": "qa",
+                    "q": "Are pointers necessary to interact with heap memory?",
+                    "a": "Yes, ONLY pointers can create and access heap memory."
+                }
+            ]
+        },
+        {
+            "name": "Data Structures",
+            "questions": [
+                {
+                    "type": "qa",
+                    "q": "What is the . operator in regards to structs?",
+                    "a": "member access operator"
+                },
+                {
+                    "type": "qa",
+                    "q": "What are the two functionalities the arrow operator (->) combines?",
+                    "a": "It combines the DEFERENCE operator (*) and the MEMBER ACCESS operator (.) by dereferencing a pointer to a struct and accessing a member variable of the struct."
+                }
+            ]
+        },
+        {
+            "name": "Other Data Types",
+            "questions": [
+                {
+                    "type": "qa",
+                    "q": "What is a type alias?",
+                    "a": "A different name given to a particular type"
+                },
+                {
+                    "type": "qa",
+                    "q": "What are the two keywords you can use to create a type alias?",
+                    "a": "'using' and 'typedef'"
+                },
+                {
+                    "type": "qa",
+                    "q": "What are union types?",
+                    "a": "A data structure that allows a singular portion of memory to be accessed as multiple different types so long as there is only one type being used at a given moment."
+                },
+                {
+                    "type": "qa",
+                    "q": "What happens trying to access a union member other than the last union member to write to the union?",
+                    "a": "No errors are thrown by this act, but it produces undetermined behavior.  (compiler reading bits representing a char as an int for example)"
+                }
+            ]
+        },
+        {
+            "name": "Classes (I)",
+            "questions": [
+                {
+                    "type": "qa",
+                    "q": "How are classes different than structs?",
+                    "a": "They can contain member functions in addition to member variables.  They also include access specifiers"
+                },
+                {
+                    "type": "qa",
+                    "q": "What are access specifiers?",
+                    "a": "Specifiers used in classes to modify the access rights of member variables"
+                },
+                {
+                    "type": "qa",
+                    "q": "Who can access 'private' members of a class?",
+                    "a": "Only members of the same class, or 'friends' of the class."
+                },
+                {
+                    "type": "qa",
+                    "q": "Who can access 'protected' members of a class?",
+                    "a": "Not only members of the same class (and friends), but also members of derived classes."
+                },
+                {
+                    "type": "qa",
+                    "q": "Who can access 'public' members of a class?",
+                    "a": "Public members are accessible from anywhere the instance of the class is accessible (within scope)"
+                },
+                {
+                    "type": "qi",
+                    "q": "What is the default member access level unless otherwise declared?",
+                    "a": "private"
+                },
+                {
+                    "type": "qi",
+                    "q": "A constructor which takes no arguments is called a:",
+                    "a": "default constructor"
+                },
+                {
+                    "type": "qa",
+                    "q": "What is the conventional C++ way to initialize members in a constructor called?",
+                    "a": "member initialization list"
+                },
+                {
+                    "type": "qa",
+                    "q": "What is the only way to construct a composed object in a constructor?",
+                    "a": "Member initialization list is the only way (JavaScript syntax for this is illegal)"
+                },
+                {
+                    "type": "qa",
+                    "q": "Classes can also be defined by two other keywords other than 'class'.  What are they?",
+                    "a": "'struct' and 'union'.  They each have public member access by default, whereas those defined with 'class' have private by default"
+                }
+            ]
+        },
+        {
+            "name": "Classes (II)",
+            "questions": [
+                {
+                    "type": "qa",
+                    "q": "What is the keyword 'this' in C++?",
+                    "a": "The pointer to the particular instance of a class.  Therefore it needs the arrow operator (->) to access its members."
+                }
+            ]
+        }
+    ]
+}
