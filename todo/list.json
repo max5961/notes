@@ -1,0 +1,47 @@
+[
+    {
+        "id": "1718731110768785",
+        "priority": "medium",
+        "name": "work on MDN Express tutorial"
+    },
+    {
+        "name": "virtual machine debian i3 install",
+        "priority": "low",
+        "id": "16710837031129864"
+    },
+    {
+        "id": "17186772383840355",
+        "priority": "high",
+        "name": "Go through redux docs, especially Redux Fundamentals Tutorial"
+    },
+    {
+        "name": "Continue to go through Mongoose docs",
+        "priority": "medium",
+        "id": "17108371724282962"
+    },
+    {
+        "name": "Start learning about immer library",
+        "priority": "low",
+        "id": "17138157721469116"
+    },
+    {
+        "name": "Take notes on class based component lifecycle methods",
+        "priority": "medium",
+        "id": "17183925138500171"
+    },
+    {
+        "id": "11712889272729918",
+        "priority": "low",
+        "name": "Quiz for common React interview questions (end of Codevolution Redux tutorial)"
+    },
+    {
+        "name": "rewrite webpack/express setup scripts (include ink gui)",
+        "priority": "low",
+        "id": "17119289399327237"
+    },
+    {
+        "name": "Add cava to dotfiles",
+        "priority": "low",
+        "id": "217190199306015"
+    }
+]
